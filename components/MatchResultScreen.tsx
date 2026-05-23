@@ -105,8 +105,8 @@ const MatchResultScreen: React.FC<MatchResultScreenProps> = ({ result, onBack, u
                                 </div>
                                 <div className="bg-white dark:bg-gray-800/50 p-2 rounded-b-lg">
                                     <h4 className="font-semibold text-sm mb-1">Top Performers</h4>
-                                    {inning!.batting.sort((a,b) => b.runs - a.runs).slice(0,2).map(b => <p key={b.playerId} className="text-xs">{b.playerName} {b.runs}{b.isOut ? '' : '*'}({b.balls})</p>)}
-                                    {inning!.bowling.sort((a,b) => b.wickets - a.wickets).slice(0,1).map(b => <p key={b.playerId} className="text-xs">{b.playerName} {b.wickets} / {b.runsConceded}</p>)}
+                                    {[...inning!.batting].sort((a,b) => b.runs - a.runs).slice(0,2).map(b => <p key={b.playerId} className="text-xs">{b.playerName} {b.runs}{b.isOut ? '' : '*'}({b.balls})</p>)}
+                                    {[...inning!.bowling].sort((a,b) => b.wickets - a.wickets).slice(0,1).map(b => <p key={b.playerId} className="text-xs">{b.playerName} {b.wickets} / {b.runsConceded}</p>)}
                                 </div>
                             </div>
                         ))}

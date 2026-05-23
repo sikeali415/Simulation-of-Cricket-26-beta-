@@ -497,6 +497,44 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
         return null
     }
 
+    fun movePlayer(index: Int, direction: String) {
+        val list = userTeam.players
+        if (direction == "up" && index > 0) {
+            val temp = list[index]
+            list[index] = list[index - 1]
+            list[index - 1] = temp
+        } else if (direction == "down" && index < list.size - 1) {
+            val temp = list[index]
+            list[index] = list[index + 1]
+            list[index + 1] = temp
+        }
+        _teamsList.value = ArrayList(_teamsList.value)
+    }
+
+    fun swapPlayers(index1: Int, index2: Int) {
+        val list = userTeam.players
+        if (index1 in list.indices && index2 in list.indices) {
+            val temp = list[index1]
+            list[index1] = list[index2]
+            list[index2] = temp
+        }
+        _teamsList.value = ArrayList(_teamsList.value)
+    }
+
+    fun setPlayerRole(player: Player, newRole: com.example.data.models.PlayerRole) {
+        val list = userTeam.players
+        val updatedList = list.map { p ->
+            if (p.id == player.id) {
+                p.copy(role = newRole)
+            } else {
+                p
+            }
+        }
+        list.clear()
+        list.addAll(updatedList)
+        _teamsList.value = ArrayList(_teamsList.value)
+    }
+
     // Roster actions: Buying or releasing players
     fun purchaseMarketPlayer(player: Player): Boolean {
         val currentRoster = userTeam.players

@@ -78,6 +78,16 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
     const currentPlayer = sortedPool[currentPlayerIdx] || null;
     const userTeam = teams.find(t => t.id === gameData.userTeamId);
 
+    const transitionTimeoutRef = React.useRef<any>(null);
+
+    useEffect(() => {
+        return () => {
+            if (transitionTimeoutRef.current) {
+                clearTimeout(transitionTimeoutRef.current);
+            }
+        };
+    }, []);
+
     const getBasePrice = (player: Player) => {
         const rating = Math.max(player.battingSkill, player.secondarySkill);
         const isAllRounderOrBowler = [PlayerRole.ALL_ROUNDER, PlayerRole.SPIN_BOWLER, PlayerRole.FAST_BOWLER].includes(player.role);
@@ -168,10 +178,14 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
             setLotStatus({ text: 'PASSED & UNSOLD', color: 'text-zinc-500 font-bold' });
         }
         
-        setTimeout(() => {
+        if (transitionTimeoutRef.current) {
+            clearTimeout(transitionTimeoutRef.current);
+        }
+        transitionTimeoutRef.current = setTimeout(() => {
             setLotStatus(null);
             setIsTransitioning(false);
             setCurrentPlayerIdx(prev => prev + 1);
+            transitionTimeoutRef.current = null;
         }, 1800);
     };
 
@@ -199,9 +213,22 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
                 const biddingTeam = eligibleTeams.find(t => {
                     if (t.id === gameData.userTeamId) return false;
                     
-                    // Improved AI Valuation Logic
+                    // Improved AI Valuation Logic with Experience-over-Youth/Current Skill Bias
+                    // Elite veterans with high Current Skill are valued exceptionally higher,
+                    // while unproven lower-rating young prospects are heavily discounted.
+                    let skillBiasFactor = 1.0;
+                    if (rating >= 72) {
+                        skillBiasFactor = 1.35; // Premium for established elite veteran class
+                    } else if (rating >= 65) {
+                        skillBiasFactor = 1.10; // Moderate boost for solid experienced class
+                    } else if (rating < 60) {
+                        skillBiasFactor = 0.65; // Heavily discount young/low-skill prospects
+                    } else {
+                        skillBiasFactor = 0.85; // Standard transition
+                    }
+
                     // Non-linear scaling: Elite players are worth much more
-                    let baseValuation = Math.pow(rating / 50, 3.5) * 1.5;
+                    let baseValuation = Math.pow(rating / 50, 3.5) * 1.5 * skillBiasFactor;
 
                     // Adjust based on team needs
                     const squad = t.squad;
@@ -276,10 +303,14 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
             setBiddingLog(prev => [msg, ...prev]);
             setLotStatus({ text: `SOLD TO ${winner.name.toUpperCase()} for ${currentBid.toFixed(2)} Cr!`, color: 'text-emerald-400 font-extrabold' });
         }
-        setTimeout(() => {
+        if (transitionTimeoutRef.current) {
+            clearTimeout(transitionTimeoutRef.current);
+        }
+        transitionTimeoutRef.current = setTimeout(() => {
             setLotStatus(null);
             setIsTransitioning(false);
             setCurrentPlayerIdx(prev => prev + 1);
+            transitionTimeoutRef.current = null;
         }, 1500);
     };
 
@@ -291,10 +322,14 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
             setBiddingLog(prev => [msg, ...prev]);
             setLotStatus({ text: 'UNSOLD', color: 'text-red-500 font-extrabold' });
         }
-        setTimeout(() => {
+        if (transitionTimeoutRef.current) {
+            clearTimeout(transitionTimeoutRef.current);
+        }
+        transitionTimeoutRef.current = setTimeout(() => {
             setLotStatus(null);
             setIsTransitioning(false);
             setCurrentPlayerIdx(prev => prev + 1);
+            transitionTimeoutRef.current = null;
         }, 1500);
     };
 

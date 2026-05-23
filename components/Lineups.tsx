@@ -80,6 +80,50 @@ const Lineups: React.FC<LineupsProps> = ({ gameData, userTeam, handleUpdatePlayi
     const [bench, setBench] = useState<Player[]>([]);
     const [playerToSwap, setPlayerToSwap] = useState<Player | null>(null);
 
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+    const handleDragStart = (e: React.DragEvent, index: number) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+        const updatedXI = [...playingXI];
+        const [movedPlayer] = updatedXI.splice(draggedIndex, 1);
+        updatedXI.splice(targetIndex, 0, movedPlayer);
+
+        setPlayingXI(updatedXI);
+        handleUpdatePlayingXI(selectedTeam.id, selectedFormat, updatedXI.map(p => p.id));
+        setDraggedIndex(null);
+        showFeedback("Batting order updated!", "success");
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
+    };
+
+    const shiftPlayerPosition = (index: number, direction: 'up' | 'down') => {
+        if (!playingXI || playingXI.length < 2) return;
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= playingXI.length) return;
+
+        const updatedXI = [...playingXI];
+        const temp = updatedXI[index];
+        updatedXI[index] = updatedXI[targetIndex];
+        updatedXI[targetIndex] = temp;
+
+        setPlayingXI(updatedXI);
+        handleUpdatePlayingXI(selectedTeam.id, selectedFormat, updatedXI.map(p => p.id));
+        showFeedback("Batting order updated!", "success");
+    };
+
     // Sync selectedTeamId if userTeam changes
     useEffect(() => {
         if (userTeam && !selectedTeamId) {
@@ -166,6 +210,73 @@ const Lineups: React.FC<LineupsProps> = ({ gameData, userTeam, handleUpdatePlayi
         }
     };
 
+    const setWicketkeeper = (playerId: string) => {
+        if (!selectedTeam || !setGameData) return;
+        const player = selectedTeam.squad.find(p => p.id === playerId);
+        if (!player) return;
+
+        setGameData(prev => {
+            if (!prev) return null;
+            const updatedTeams = prev.teams.map(t => {
+                if (t.id !== selectedTeamId) return t;
+                const updatedSquad = t.squad.map(p => {
+                    if (p.id === playerId) {
+                        return { ...p, role: 'WK' as any };
+                    } else if (p.role === 'WK') {
+                        return { ...p, role: 'BT' as any };
+                    }
+                    return p;
+                });
+                return { ...t, squad: updatedSquad };
+            });
+            return {
+                ...prev,
+                teams: updatedTeams,
+                allPlayers: prev.allPlayers.map(p => {
+                    if (p.id === playerId) {
+                        return { ...p, role: 'WK' as any };
+                    } else if (p.role === 'WK' && prev.teams.find(t => t.id === selectedTeamId)?.squad.some(s => s.id === p.id)) {
+                        return { ...p, role: 'BT' as any };
+                    }
+                    return p;
+                })
+            };
+        });
+        showFeedback(`${player.name} designated as Wicketkeeper!`, "success");
+    };
+
+    const togglePlayerRole = (playerId: string, currentRole: any) => {
+        if (!selectedTeam || !setGameData) return;
+        const rolesOrder = ['BT', 'WK', 'AR', 'SB', 'BL'];
+        const nextRoleIdx = (rolesOrder.indexOf(currentRole) + 1) % rolesOrder.length;
+        const newRole = rolesOrder[nextRoleIdx];
+
+        setGameData(prev => {
+            if (!prev) return null;
+            const updatedTeams = prev.teams.map(t => {
+                if (t.id !== selectedTeamId) return t;
+                const updatedSquad = t.squad.map(p => {
+                    if (p.id === playerId) {
+                        return { ...p, role: newRole as any };
+                    }
+                    return p;
+                });
+                return { ...t, squad: updatedSquad };
+            });
+            return {
+                ...prev,
+                teams: updatedTeams,
+                allPlayers: prev.allPlayers.map(p => {
+                    if (p.id === playerId) {
+                        return { ...p, role: newRole as any };
+                    }
+                    return p;
+                })
+            };
+        });
+        showFeedback(`Player role updated to ${newRole}!`, "success");
+    };
+
     const selectPlayerForSwap = (player: Player) => {
         if (player.id === selectedTeam.captainId) {
             showFeedback("Cannot swap the captain. Sack the captain or appoint a new one first.", "error");
@@ -203,85 +314,163 @@ const Lineups: React.FC<LineupsProps> = ({ gameData, userTeam, handleUpdatePlayi
 
     const renderPlayerList = (players: Player[], isXI: boolean) => (
         <ul className="space-y-1">
-            {players.map(player => (
-                <li key={player.id} className={`flex flex-col p-2 rounded-md transition-colors ${playerToSwap?.id === player.id ? 'bg-teal-200 dark:bg-teal-800' : 'bg-gray-100 dark:bg-gray-900/50'} ${player.injury ? 'border-l-4 border-amber-500' : ''}`}>
-                    <div className="flex items-center w-full">
-                        <span className={`font-bold w-10 text-xs text-center py-0.5 rounded text-white ${getRoleColor(player.role)}`}>{player.role}</span>
-                        <span className="flex-grow flex flex-col justify-center min-w-0 px-2">
-                            <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
-                                {player.name} {player.isForeign ? <span className="text-[9px] bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 font-extrabold px-1 rounded">F</span> : ''} {player.id === captainId ? <span className="text-[9px] bg-yellow-1050 bg-yellow-4050 text-yellow-600 dark:text-yellow-400 font-black px-1 rounded">C</span> : ''}
-                            </span>
-                            {player.stats[selectedFormat] && player.stats[selectedFormat].matches > 0 ? (
-                                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-mono mt-0.5 leading-none">
-                                    {player.role === 'BT' || player.role === 'WK' ? (
-                                        <span>R: <strong>{player.stats[selectedFormat].runs}</strong> | Avg: <strong>{player.stats[selectedFormat].average ? player.stats[selectedFormat].average.toFixed(1) : '-'}</strong> | SR: <strong>{player.stats[selectedFormat].strikeRate ? player.stats[selectedFormat].strikeRate.toFixed(1) : '-'}</strong></span>
-                                    ) : player.role === 'SB' || player.role === 'BL' ? (
-                                        <span>W: <strong>{player.stats[selectedFormat].wickets}</strong> | Econ: <strong>{player.stats[selectedFormat].economy ? player.stats[selectedFormat].economy.toFixed(2) : '-'}</strong> | Avg: <strong>{player.stats[selectedFormat].bowlingAverage ? player.stats[selectedFormat].bowlingAverage.toFixed(1) : '-'}</strong></span>
-                                    ) : (
-                                        <span>R: <strong>{player.stats[selectedFormat].runs}</strong> | W: <strong>{player.stats[selectedFormat].wickets}</strong> | Econ: <strong>{player.stats[selectedFormat].economy ? player.stats[selectedFormat].economy.toFixed(2) : '-'}</strong></span>
-                                    )}
-                                </span>
-                            ) : (
-                                <span className="text-[10px] text-gray-400 italic mt-0.5 leading-none">No league stats yet</span>
-                            )}
-                        </span>
-                        <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 mr-2 flex flex-col items-center">
-                            <span className="text-[8px] uppercase text-gray-500 leading-none">Bat</span>
-                            {player.battingSkill}
-                        </span>
-                        <span className="font-semibold text-xs text-gray-500 mr-4 flex flex-col items-center">
-                            <span className="text-[8px] uppercase text-gray-500 leading-none">Bowl</span>
-                            {player.secondarySkill}
-                        </span>
-                        {isXI && (
-                            player.id === captainId ? (
-                                <div className="flex gap-1 items-center mr-1">
-                                    <span className="text-lg" title="Captain">🧢</span>
-                                    <button onClick={() => setCaptain(null)} className="text-[9px] bg-red-500/20 hover:bg-red-500 text-red-600 hover:text-white font-bold p-1 rounded transition-colors" title="Sack Captain">✕</button>
-                                </div>
-                            ) : (
-                                <button onClick={() => setCaptain(player.id)} className="text-[14px] bg-slate-700/50 hover:bg-yellow-500 text-slate-400 hover:text-slate-900 p-1 rounded mr-1 transition-all" title="Make Captain">🧢</button>
-                            )
-                        )}
-                        {isXI ? (
-                             <button onClick={() => selectPlayerForSwap(player)} className="text-red-500 hover:scale-110 transition-transform"><Icons.RemoveCircle /></button>
-                        ) : (
-                            <button onClick={() => completeSwap(player)} disabled={!playerToSwap || (isDomesticOnlyFormat && player.isForeign)} className="disabled:opacity-30 text-teal-500 hover:scale-110 transition-transform">
-                                <Icons.PlusCircle />
-                            </button>
-                        )}
-                    </div>
+            {players.map((player, idx) => {
+                const isFirstOpener = isXI && idx === 0;
+                const isSecondOpener = isXI && idx === 1;
+                const isCaptain = player.id === captainId;
 
-                    {/* Dynamic Badges and Injury Display */}
-                    <div className="pl-12 pr-2 mt-1 flex flex-col gap-1 w-full border-t border-slate-200/50 dark:border-slate-800/50 pt-1">
-                        {/* Injury Alert & First Aid Treating */}
-                        {player.injury && (
-                            <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 rounded p-1 mb-1 animate-pulse">
-                                <span className="text-[9px] text-amber-500 font-bold flex items-center gap-1">
-                                    🚨 Injured: {player.injury.text} ({player.injury.durationValue} {player.injury.durationValue === 1 ? 'match' : player.injury.durationType})
-                                </span>
-                                {selectedTeam.id === gameData.userTeamId && selectedTeam.firstAidKits && selectedTeam.firstAidKits > 0 && (
-                                    <button 
-                                        onClick={() => useFirstAid(player.id)}
-                                        className="text-[8px] bg-red-600 hover:bg-red-500 text-white font-extrabold px-1.5 py-0.5 rounded shadow flex items-center gap-0.5 cursor-pointer"
+                return (
+                    <li 
+                        key={player.id} 
+                        draggable={isXI}
+                        onDragStart={(e) => isXI && handleDragStart(e, idx)}
+                        onDragOver={(e) => isXI && handleDragOver(e, idx)}
+                        onDrop={(e) => isXI && handleDrop(e, idx)}
+                        onDragEnd={() => isXI && handleDragEnd()}
+                        className={`flex flex-col p-2 rounded-md transition-all ${
+                            draggedIndex === idx && isXI 
+                                ? 'bg-teal-1050 dark:bg-teal-900 border border-dashed border-teal-500 pl-4' 
+                                : playerToSwap?.id === player.id 
+                                ? 'bg-teal-200 dark:bg-teal-800' 
+                                : 'bg-gray-100 dark:bg-gray-900/50'
+                        } ${player.injury ? 'border-l-4 border-amber-500' : ''}`}
+                    >
+                        <div className="flex items-center w-full">
+                            {/* Drag handle and Lineup Position badge */}
+                            {isXI && (
+                                <div className="flex items-center gap-1.5 mr-1.5 shrink-0 select-none">
+                                    <div 
+                                        className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-100 font-mono text-base font-bold pr-0.5"
+                                        title="Drag to rearrange batting order"
                                     >
-                                        💊 USE FIRST AID
-                                    </button>
-                                )}
-                            </div>
-                        )}
+                                        ⠿
+                                    </div>
+                                    <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 text-[10px] text-slate-800 dark:text-slate-300 font-bold flex items-center justify-center border border-slate-300 dark:border-slate-700" title={`Batting position ${idx + 1}`}>
+                                        {idx + 1}
+                                    </span>
+                                </div>
+                            )}
 
-                        {/* Badges list */}
-                        <div className="flex flex-wrap gap-1">
-                            {getPlayerBadges(player).slice(0, 1).map((badge, bidx) => (
-                                <span key={bidx} className="text-[9px] font-semibold bg-amber-500/10 dark:bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-full px-1.5 leading-none py-0.5">
-                                    🏆 {badge}
+                            <button 
+                                onClick={() => togglePlayerRole(player.id, player.role)}
+                                className={`font-bold w-10 text-[10px] text-center py-0.5 rounded text-white shrink-0 hover:scale-105 cursor-pointer transition-transform ${getRoleColor(player.role)}`}
+                                title="Click to cycle player role"
+                            >
+                                {player.role}
+                            </button>
+                            
+                            <span className="flex-grow flex flex-col justify-center min-w-0 px-2">
+                                <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
+                                    {player.name} 
+                                    {player.isForeign && <span className="text-[9px] bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 font-extrabold px-1 rounded">F</span>} 
+                                    {isCaptain && <span className="text-[9px] bg-yellow-500 dark:bg-yellow-600 text-amber-950 dark:text-amber-50 font-black px-1 rounded">C</span>}
+                                    {isFirstOpener && <span className="text-[8px] bg-teal-100 dark:bg-teal-950 text-teal-605 dark:text-teal-400 font-bold px-1 rounded uppercase">Opener #1</span>}
+                                    {isSecondOpener && <span className="text-[8px] bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-bold px-1 rounded uppercase">Opener #2</span>}
+                                    {!isFirstOpener && !isSecondOpener && isXI && idx <= 5 && <span className="text-[8px] bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 font-medium px-1 rounded uppercase">Middle Order</span>}
+                                    {isXI && idx >= 6 && <span className="text-[8px] bg-zinc-200 dark:bg-zinc-850 text-zinc-650 dark:text-zinc-400 font-mono px-1 rounded uppercase">Tail</span>}
                                 </span>
-                            ))}
+                                {player.stats[selectedFormat] && player.stats[selectedFormat].matches > 0 ? (
+                                    <span className="text-[10px] text-teal-600 dark:text-teal-400 font-mono mt-0.5 leading-none">
+                                        {player.role === 'BT' || player.role === 'WK' ? (
+                                            <span>R: <strong>{player.stats[selectedFormat].runs}</strong> | Avg: <strong>{player.stats[selectedFormat].average ? player.stats[selectedFormat].average.toFixed(1) : '-'}</strong> | SR: <strong>{player.stats[selectedFormat].strikeRate ? player.stats[selectedFormat].strikeRate.toFixed(1) : '-'}</strong></span>
+                                        ) : player.role === 'SB' || player.role === 'BL' ? (
+                                            <span>W: <strong>{player.stats[selectedFormat].wickets}</strong> | Econ: <strong>{player.stats[selectedFormat].economy ? player.stats[selectedFormat].economy.toFixed(2) : '-'}</strong> | Avg: <strong>{player.stats[selectedFormat].bowlingAverage ? player.stats[selectedFormat].bowlingAverage.toFixed(1) : '-'}</strong></span>
+                                        ) : (
+                                            <span>R: <strong>{player.stats[selectedFormat].runs}</strong> | W: <strong>{player.stats[selectedFormat].wickets}</strong> | Econ: <strong>{player.stats[selectedFormat].economy ? player.stats[selectedFormat].economy.toFixed(2) : '-'}</strong></span>
+                                        )}
+                                    </span>
+                                ) : (
+                                    <span className="text-[10px] text-gray-400 italic mt-0.5 leading-none">No league stats yet</span>
+                                )}
+                            </span>
+                            <span className="font-semibold text-xs text-slate-800 dark:text-slate-200 mr-2 flex flex-col items-center">
+                                <span className="text-[8px] uppercase text-gray-400 leading-none">Bat</span>
+                                {player.battingSkill}
+                            </span>
+                            <span className="font-semibold text-xs text-gray-400 mr-2.5 flex flex-col items-center">
+                                <span className="text-[8px] uppercase text-gray-500 leading-none">Bowl</span>
+                                {player.secondarySkill}
+                            </span>
+
+                            {/* Tactile up/down shifting buttons */}
+                            {isXI && (
+                                <div className="flex flex-col gap-0.5 mr-2 shrink-0 select-none">
+                                    <button 
+                                        onClick={() => shiftPlayerPosition(idx, 'up')}
+                                        disabled={idx === 0}
+                                        className="h-4 w-5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 disabled:opacity-30 rounded text-[9px] flex items-center justify-center text-slate-750 dark:text-slate-300 font-bold leading-none cursor-pointer"
+                                        title="Shift batting order up"
+                                    >
+                                        ▲
+                                    </button>
+                                    <button 
+                                        onClick={() => shiftPlayerPosition(idx, 'down')}
+                                        disabled={idx === 10}
+                                        className="h-4 w-5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 disabled:opacity-30 rounded text-[9px] flex items-center justify-center text-slate-755 dark:text-slate-300 font-bold leading-none cursor-pointer"
+                                        title="Shift batting order down"
+                                    >
+                                        ▼
+                                    </button>
+                                </div>
+                            )}
+
+                            {isXI && (
+                                player.id === captainId ? (
+                                    <div className="flex gap-1 items-center mr-1">
+                                        <span className="text-lg" title="Captain">🧢</span>
+                                        <button onClick={() => setCaptain(null)} className="text-[9px] bg-red-500/20 hover:bg-red-500 text-red-600 hover:text-white font-bold p-1 rounded transition-colors" title="Sack Captain">✕</button>
+                                    </div>
+                                ) : (
+                                    <button onClick={() => setCaptain(player.id)} className="text-[14px] bg-slate-700/50 hover:bg-yellow-500 text-slate-400 hover:text-slate-900 p-1 rounded mr-1 transition-all" title="Make Captain">🧢</button>
+                                )
+                            )}
+                            {isXI && (
+                                player.role === 'WK' ? (
+                                    <span className="text-lg mr-1.5 leading-none select-none" title="Designated Wicketkeeper">🧤</span>
+                                ) : (
+                                    <button onClick={() => setWicketkeeper(player.id)} className="text-[14.5px] bg-slate-700/50 hover:bg-emerald-600 hover:text-white text-slate-350 p-1 rounded mr-1 transition-all" title="Designate Wicketkeeper">🧤</button>
+                                )
+                            )}
+                            {isXI ? (
+                                 <button onClick={() => selectPlayerForSwap(player)} className="text-red-500 hover:scale-110 transition-transform"><Icons.RemoveCircle /></button>
+                            ) : (
+                                <button onClick={() => completeSwap(player)} disabled={!playerToSwap || (isDomesticOnlyFormat && player.isForeign)} className="disabled:opacity-30 text-teal-500 hover:scale-110 transition-transform">
+                                    <Icons.PlusCircle />
+                                </button>
+                            )}
                         </div>
-                    </div>
-                </li>
-            ))}
+
+                        {/* Dynamic Badges and Injury Display */}
+                        <div className="pl-8 pr-2 mt-1 flex flex-col gap-1 w-full border-t border-slate-200/50 dark:border-slate-800/50 pt-1">
+                            {/* Injury Alert & First Aid Treating */}
+                            {player.injury && (
+                                <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 rounded p-1 mb-1 animate-pulse">
+                                    <span className="text-[9px] text-amber-500 font-bold flex items-center gap-1">
+                                        🚨 Injured: {player.injury.text} ({player.injury.durationValue} {player.injury.durationValue === 1 ? 'match' : player.injury.durationType})
+                                    </span>
+                                    {selectedTeam.id === gameData.userTeamId && selectedTeam.firstAidKits && selectedTeam.firstAidKits > 0 && (
+                                        <button 
+                                            onClick={() => useFirstAid(player.id)}
+                                            className="text-[8px] bg-red-600 hover:bg-red-500 text-white font-extrabold px-1.5 py-0.5 rounded shadow flex items-center gap-0.5 cursor-pointer"
+                                        >
+                                            💊 USE FIRST AID
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Badges list */}
+                            <div className="flex flex-wrap gap-1">
+                                {getPlayerBadges(player).slice(0, 1).map((badge, bidx) => (
+                                    <span key={bidx} className="text-[9px] font-semibold bg-amber-500/10 dark:bg-amber-500/5 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-full px-1.5 leading-none py-0.5">
+                                        🏆 {badge}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </li>
+                );
+            })}
         </ul>
     );
 

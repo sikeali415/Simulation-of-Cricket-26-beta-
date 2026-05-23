@@ -146,7 +146,7 @@ export const useLiveMatch = (
                         return savedXI.map(id => t.squad.find(p => p.id === id)).filter(Boolean) as Player[];
                     }
                     // Fallback to auto-generated if none found (should not happen if lineups were set)
-                    return t.squad.sort((a,b) => (b.battingSkill + b.secondarySkill) - (a.battingSkill + a.secondarySkill)).slice(0, 11);
+                    return [...t.squad].sort((a,b) => (b.battingSkill + b.secondarySkill) - (a.battingSkill + a.secondarySkill)).slice(0, 11);
                 };
 
                 const squadXI = getXI(team);

@@ -245,7 +245,7 @@ const PostTossInfoScreen = ({ state, gameData, onProceed }: { state: LiveMatchSt
 
     const getWatchPlayer = (teamId: string) => {
         const team = gameData.teams.find(t => t.id === teamId);
-        return team?.squad.sort((a, b) => (b.battingSkill + b.secondarySkill) - (a.battingSkill + a.secondarySkill))[0];
+        return team ? [...team.squad].sort((a, b) => (b.battingSkill + b.secondarySkill) - (a.battingSkill + a.secondarySkill))[0] : undefined;
     };
 
     const watchA = getWatchPlayer(teamA.id);
