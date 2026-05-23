@@ -121,48 +121,208 @@ export const getPlayerById = (id: string, allPlayers: Player[]) => {
     return player;
 };
 
-export const generateAutoXI = (squad: Player[], format: Format) => {
+export const generateAutoXI = (squad: Player[], format: Format): Player[] => {
     // Only pick healthy players first; if we don't have enough players, fallback to the full squad database.
     const activeSquad = squad.filter(p => !p.injury).length >= 11 ? squad.filter(p => !p.injury) : squad;
-    const xi: Player[] = [];
-    const selectedIds = new Set<string>();
     
-    // Only 1 foreign player allowed in the Playing XI as per new rules
+    // Check if it is a domestic-only format (ODI & Shield)
+    const isDomesticOnly = [Format.ODI, Format.SHIELD].includes(format);
+    
+    // Eligible players (no foreigns in domestic-only formats)
+    const eligibleSquad = activeSquad.filter(p => !isDomesticOnly || !p.isForeign);
+    
+    const selectedIds = new Set<string>();
     let foreignInXI = 0;
+    const maxForeign = 1;
 
-    const addPlayer = (p: Player) => {
+    const tryAdd = (p: Player) => {
         if (selectedIds.has(p.id)) return false;
-        if (p.isForeign && foreignInXI >= 1) return false;
+        if (p.isForeign && foreignInXI >= maxForeign) return false;
         
-        xi.push(p);
         selectedIds.add(p.id);
         if (p.isForeign) foreignInXI++;
         return true;
     };
 
-    // 1. Must have a Wicket Keeper
-    const keeper = [...activeSquad].sort((a,b) => b.battingSkill - a.battingSkill).find(p => p.role === PlayerRole.WICKET_KEEPER);
-    if (keeper) addPlayer(keeper);
-
-    // 2. Must have openers
-    const openers = activeSquad.filter(p => p.isOpener).sort((a,b) => b.battingSkill - a.battingSkill);
-    openers.forEach(p => { if (xi.length < 11) addPlayer(p); });
-
-    // 3. Main Batsmen
-    const batsmen = activeSquad.filter(p => p.role === PlayerRole.BATSMAN).sort((a,b) => b.battingSkill - a.battingSkill);
-    batsmen.forEach(p => { if (xi.length < 11) addPlayer(p); });
-
-    // 4. Fill with All-rounders and Bowlers
-    const others = activeSquad.filter(p => !selectedIds.has(p.id)).sort((a,b) => b.secondarySkill - a.secondarySkill);
-    others.forEach(p => { if (xi.length < 11) addPlayer(p); });
-
-    // 5. Emergency fill if rules were too strict
-    if (xi.length < 11) {
-        const remaining = activeSquad.filter(p => !selectedIds.has(p.id));
-        remaining.forEach(p => { if (xi.length < 11) addPlayer(p); });
+    // 1. Mandatory Wicket Keeper (minimum 1)
+    const wks = [...eligibleSquad]
+        .filter(p => p.role === PlayerRole.WICKET_KEEPER)
+        .sort((a, b) => b.battingSkill - a.battingSkill);
+    let wkAdded = false;
+    for (const wk of wks) {
+        if (tryAdd(wk)) {
+            wkAdded = true;
+            break;
+        }
     }
 
-    return xi.slice(0, 11);
+    // 2. Mandatory Proper Batters (minimum 4)
+    // We prioritize Opener-type players for batting slots if they exist
+    const bts = [...eligibleSquad]
+        .filter(p => p.role === PlayerRole.BATSMAN)
+        .sort((a, b) => {
+            if (a.isOpener && !b.isOpener) return -1;
+            if (!a.isOpener && b.isOpener) return 1;
+            return b.battingSkill - a.battingSkill;
+        });
+    let battersAdded = 0;
+    for (const bt of bts) {
+        if (battersAdded >= 4) break;
+        if (tryAdd(bt)) {
+            battersAdded++;
+        }
+    }
+
+    // 3. Mandatory All-rounder (minimum 1)
+    const ars = [...eligibleSquad]
+        .filter(p => p.role === PlayerRole.ALL_ROUNDER)
+        .sort((a, b) => (b.battingSkill + b.secondarySkill) - (a.battingSkill + a.secondarySkill));
+    let arAdded = false;
+    for (const ar of ars) {
+        if (tryAdd(ar)) {
+            arAdded = true;
+            break;
+        }
+    }
+
+    // 4. Mandatory Proper Bowlers (minimum 3)
+    const bls = [...eligibleSquad]
+        .filter(p => p.role === PlayerRole.FAST_BOWLER || p.role === PlayerRole.SPIN_BOWLER)
+        .sort((a, b) => b.secondarySkill - a.secondarySkill);
+    let bowlersAdded = 0;
+    for (const bl of bls) {
+        if (bowlersAdded >= 3) break;
+        if (tryAdd(bl)) {
+            bowlersAdded++;
+        }
+    }
+
+    // --- FALLBACKS FOR MANDATORY SLOTS (If squad has unusual composition) ---
+    if (selectedIds.size < 11 && !wkAdded) {
+        const fallbackWks = [...eligibleSquad]
+            .filter(p => !selectedIds.has(p.id))
+            .sort((a, b) => b.battingSkill - a.battingSkill);
+        for (const p of fallbackWks) {
+            if (tryAdd(p)) {
+                wkAdded = true;
+                break;
+            }
+        }
+    }
+
+    if (selectedIds.size < 11 && battersAdded < 4) {
+        const fallbackBts = [...eligibleSquad]
+            .filter(p => !selectedIds.has(p.id) && p.role !== PlayerRole.FAST_BOWLER && p.role !== PlayerRole.SPIN_BOWLER)
+            .sort((a, b) => b.battingSkill - a.battingSkill);
+        for (const p of fallbackBts) {
+            if (battersAdded >= 4) break;
+            if (tryAdd(p)) {
+                battersAdded++;
+            }
+        }
+    }
+
+    if (selectedIds.size < 11 && !arAdded) {
+        const fallbackArs = [...eligibleSquad]
+            .filter(p => !selectedIds.has(p.id))
+            .sort((a, b) => (b.battingSkill + b.secondarySkill) - (a.battingSkill + a.secondarySkill));
+        for (const p of fallbackArs) {
+            if (tryAdd(p)) {
+                arAdded = true;
+                break;
+            }
+        }
+    }
+
+    if (selectedIds.size < 11 && bowlersAdded < 3) {
+        const fallbackBls = [...eligibleSquad]
+            .filter(p => !selectedIds.has(p.id))
+            .sort((a, b) => b.secondarySkill - a.secondarySkill);
+        for (const p of fallbackBls) {
+            if (bowlersAdded >= 3) break;
+            if (tryAdd(p)) {
+                bowlersAdded++;
+            }
+        }
+    }
+
+    // 5. Fill remaining selection to 11 players
+    // Check proper bowlers currently selected (FAST_BOWLER + SPIN_BOWLER) - CANNOT EXCEED 5!
+    while (selectedIds.size < 11) {
+        const selectedList = Array.from(selectedIds).map(id => eligibleSquad.find(p => p.id === id)!).filter(Boolean);
+        const currentBowlerCount = selectedList.filter(p => p.role === PlayerRole.FAST_BOWLER || p.role === PlayerRole.SPIN_BOWLER).length;
+        
+        const remaining = eligibleSquad.filter(p => !selectedIds.has(p.id));
+        if (remaining.length === 0) break;
+
+        // Score remaining players dynamically based on roles
+        const scoredRemaining = remaining.map(p => {
+            let score = 0;
+            let allowed = true;
+            if (p.role === PlayerRole.BATSMAN) {
+                score = p.battingSkill;
+            } else if (p.role === PlayerRole.WICKET_KEEPER) {
+                score = p.battingSkill * 0.9;
+            } else if (p.role === PlayerRole.ALL_ROUNDER) {
+                score = (p.battingSkill + p.secondarySkill) * 0.85;
+            } else if (p.role === PlayerRole.FAST_BOWLER || p.role === PlayerRole.SPIN_BOWLER) {
+                if (currentBowlerCount >= 5) {
+                    allowed = false; // Cannot exceed 5 bowlers
+                } else {
+                    score = p.secondarySkill;
+                }
+            }
+            return { player: p, score, allowed };
+        });
+
+        // Filter and sort by descending utility score
+        const allowedRemaining = scoredRemaining.filter(item => item.allowed).sort((a,b) => b.score - a.score);
+        if (allowedRemaining.length > 0) {
+            tryAdd(allowedRemaining[0].player);
+        } else {
+            // Hard fallback if constraints are strictly unresolvable with scoring
+            const hardFallback = remaining.sort((a,b) => (b.battingSkill + b.secondarySkill) - (a.battingSkill + a.secondarySkill));
+            tryAdd(hardFallback[0]);
+        }
+    }
+
+    // 6. Absolute emergency fill with any remaining player from full squad (should not normally happen)
+    if (selectedIds.size < 11) {
+         const forceRemaining = squad.filter(p => !selectedIds.has(p.id));
+         for (const p of forceRemaining) {
+              if (selectedIds.size >= 11) break;
+              selectedIds.add(p.id);
+         }
+    }
+
+    const finalXIList = Array.from(selectedIds).map(id => squad.find(p => p.id === id)!).filter(Boolean).slice(0, 11);
+
+    // --- REORDER TO STANDARD PLAYING XI POSITIONING (1 to 11) ---
+    // 1-7: Opener / Batters / Keeper / All-rounders (sorted by battingSkill desc)
+    // 8-11: Proper Bowlers (sorted by secondarySkill desc for bowling depth)
+    const properBowlersPart = finalXIList.filter(p => p.role === PlayerRole.FAST_BOWLER || p.role === PlayerRole.SPIN_BOWLER);
+    let finalBowlers = [...properBowlersPart].sort((a, b) => b.secondarySkill - a.secondarySkill);
+    
+    // To keep it strictly 4 bowlers at 8-11 if bowlers count is > 4:
+    let extraBowlersAsBatters: Player[] = [];
+    if (finalBowlers.length > 4) {
+        // Keep the best 4 bowlers as the tail 8-11
+        extraBowlersAsBatters = finalBowlers.slice(4);
+        finalBowlers = finalBowlers.slice(0, 4);
+    }
+    
+    const nonBowlersPart = finalXIList.filter(p => p.role !== PlayerRole.FAST_BOWLER && p.role !== PlayerRole.SPIN_BOWLER);
+    const top7Pool = [...nonBowlersPart, ...extraBowlersAsBatters];
+    
+    // Sort top order batters by battingSkill, putting openers right at the top
+    top7Pool.sort((a, b) => {
+        if (a.isOpener && !b.isOpener) return -1;
+        if (!a.isOpener && b.isOpener) return 1;
+        return b.battingSkill - a.battingSkill;
+    });
+
+    // Make sure we have 11 total
+    return [...top7Pool, ...finalBowlers.reverse()];
 };
 
 export const getBatterTier = (battingSkill: number) => {

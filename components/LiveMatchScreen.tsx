@@ -429,7 +429,7 @@ const PostTossInfoScreen = ({ state, gameData, onProceed }: { state: LiveMatchSt
 };
 
 const LiveMatchScreen: React.FC<LiveMatchScreenProps> = ({ match, gameData, onMatchComplete, onExit, savedState }) => {
-    const { state, playBall, playOver, autoSimulate, simulateInning, simulateMatch, setBattingStrategy, setBowlingStrategy, selectOpeners, selectNextBatter, selectNextBowler, startMatch, proceedToMatch } = useLiveMatch(match, gameData, onMatchComplete, savedState);
+    const { state, playBall, playOver, autoSimulate, simulateInning, simulateMatch, setBattingStrategy, setBowlingStrategy, selectOpeners, selectNextBatter, selectNextBowler, startMatch, proceedToMatch, dismissCelebration } = useLiveMatch(match, gameData, onMatchComplete, savedState);
     const commentaryRef = useRef<HTMLDivElement>(null);
     
     // Match Centre State
@@ -982,6 +982,37 @@ const LiveMatchScreen: React.FC<LiveMatchScreenProps> = ({ match, gameData, onMa
                 @keyframes slide-up { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
                 .animate-slide-up { animation: slide-up 0.5s ease-out forwards; }
             `}</style>
+
+            {/* Achievement & Milestone Celebration Popup */}
+            {state.celebration && (
+                <div className="absolute inset-0 bg-black/85 z-[150] flex flex-col items-center justify-center p-6 animate-fade-in backdrop-blur-xs">
+                    <div className="max-w-md w-full bg-slate-800 border-4 border-yellow-500 rounded-2xl shadow-2xl p-6 text-center transform scale-100 transition-all relative overflow-hidden">
+                        {/* Shimmer background flare */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 via-amber-200 to-orange-500 rounded-2xl blur-lg opacity-30 animate-pulse"></div>
+                        
+                        <div className="relative z-10 space-y-4">
+                            <span className="text-6xl animate-bounce block">{state.celebration.icon || '🏆'}</span>
+                            <h2 className="text-2xl font-black tracking-wider text-yellow-400 uppercase drop-shadow-md">
+                                {state.celebration.title}
+                            </h2>
+                            <p className="text-sm font-semibold text-slate-100 tracking-wide">
+                                {state.celebration.subtitle}
+                            </p>
+                            
+                            <div className="pt-4">
+                                <button
+                                    onClick={() => {
+                                        dismissCelebration();
+                                    }}
+                                    className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 active:scale-95 text-slate-950 font-black uppercase tracking-widest text-[11px] py-2.5 px-6 rounded-full shadow-lg transition-all"
+                                >
+                                    Awesome! 🌟
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Broadcaster Overlay */}
             {tvLogo && (

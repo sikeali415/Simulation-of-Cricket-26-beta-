@@ -163,6 +163,7 @@ export interface LiveMatchState {
     ballByBallId?: string;
     recentBalls: string[];
     commentary: string[]; battingTeam: Team; bowlingTeam: Team; requiredRunRate: number; currentPartnership: { runs: number, balls: number }; fallOfWickets: { score: number, wicket: number, over: string, player: string }[]; waitingFor: 'openers' | 'batter' | 'bowler' | 'batter_arrival' | 'bowler_change' | null; strategies: { batting: Strategy; bowling: Strategy; }; autoPlayType: 'regular' | 'inning' | 'match' | null; tossWinnerId: string | null; tossDecision: 'bat' | 'bowl' | null;
+    celebration?: { title: string; subtitle: string; icon: string };
 }
 
 export interface Message { id: string; text: string; sender: 'user' | 'model' | 'bot'; timestamp?: Date; }

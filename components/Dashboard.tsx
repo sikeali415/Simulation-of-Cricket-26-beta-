@@ -68,7 +68,22 @@ const Dashboard: React.FC<DashboardProps> = ({ gameData, userTeam, setScreen, ha
 
     return (
         <div className="p-4 space-y-4">
-            <header className="text-center pb-2 border-b-2 border-gray-200 dark:border-gray-700">
+            <header className="text-center pb-2 border-b-2 border-gray-200 dark:border-gray-700 relative">
+                {/* Universal Optimize Icon Button (⚙️/🔄) in top-right with custom Tooltip */}
+                <div className="absolute right-0 top-0 group">
+                    <button
+                        onClick={optimizeAllSquads}
+                        title="Universal Optimize All Squads"
+                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-teal-500/10 dark:bg-gray-800 dark:hover:bg-teal-500/20 text-gray-500 hover:text-teal-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all duration-200 active:scale-95"
+                    >
+                        🔄
+                    </button>
+                    {/* Tooltip */}
+                    <div className="pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-9 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold py-1 px-2 rounded shadow-xl whitespace-nowrap z-50">
+                        Universal Optimize
+                    </div>
+                </div>
+
                 <p className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-widest mb-1">SEASON {gameData.currentSeason}</p>
                 {renderTournamentLogo()}
                 {sponsorship ? (
@@ -108,15 +123,6 @@ const Dashboard: React.FC<DashboardProps> = ({ gameData, userTeam, setScreen, ha
                     </button>
                 )}
             </div>
-
-            {/* Universal Optimize Button */}
-            <button 
-                onClick={optimizeAllSquads}
-                className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-600 hover:to-emerald-600 active:from-teal-700 active:to-emerald-700 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-teal-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 border border-teal-400/30"
-            >
-                <div className="w-5 h-5" dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>` }}></div>
-                Universal Optimize 🔘
-            </button>
 
             <div className="grid grid-cols-3 gap-3">
                  <button onClick={() => setScreen('LEAGUES')} className="bg-white dark:bg-gray-800/50 p-3 rounded-lg shadow-md flex flex-col items-center justify-center space-y-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-center group">

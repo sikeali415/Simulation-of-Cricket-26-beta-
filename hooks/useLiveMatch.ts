@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameData, Match, Player, Format, Team, Inning, MatchResult, PlayerRole, BattingPerformance, BowlingPerformance, Strategy, LiveMatchState } from '../types';
-import { PITCH_MODIFIERS, formatOvers, getPlayerById, generateAutoXI, getBatterTier, BATTING_PROFILES, getCommentary } from '../utils';
+import { PITCH_MODIFIERS, formatOvers, getPlayerById, generateAutoXI, getBatterTier, BATTING_PROFILES, getCommentary, aggregateStats } from '../utils';
 
 export const useLiveMatch = (
     match: Match,
@@ -13,6 +13,46 @@ export const useLiveMatch = (
     const matchIdRef = useRef<string | number | null>(initialState ? initialState.match.matchNumber : null);
     const autoPlayRef = useRef<any>(null); 
     const [allPlayers, setAllPlayers] = useState<Player[]>([]);
+    
+    const consecutiveWicketsRef = useRef<Record<string, number>>({});
+    const celebratedMilestonesRef = useRef<Set<string>>(new Set());
+    const pendingMatchResultRef = useRef<MatchResult | null>(null);
+
+    const checkTournamentRunLeading = (playerId: string, playerRunsInMatch: number): boolean => {
+        const format = gameData.currentFormat;
+        let highestOtherRuns = 0;
+        
+        gameData.allPlayers.forEach(p => {
+            if (p.id !== playerId) {
+                const r = p.stats[format]?.runs || 0;
+                if (r > highestOtherRuns) highestOtherRuns = r;
+            }
+        });
+        
+        const strikerObj = gameData.allPlayers.find(p => p.id === playerId);
+        const strikerBaseRuns = strikerObj?.stats[format]?.runs || 0;
+        const totalRuns = strikerBaseRuns + playerRunsInMatch;
+        
+        return totalRuns > highestOtherRuns;
+    };
+
+    const checkTournamentWicketLeading = (playerId: string, playerWicketsInMatch: number): boolean => {
+        const format = gameData.currentFormat;
+        let highestOtherWickets = 0;
+        
+        gameData.allPlayers.forEach(p => {
+            if (p.id !== playerId) {
+                const w = p.stats[format]?.wickets || 0;
+                if (w > highestOtherWickets) highestOtherWickets = w;
+            }
+        });
+        
+        const bowlerObj = gameData.allPlayers.find(p => p.id === playerId);
+        const bowlerBaseWickets = bowlerObj?.stats[format]?.wickets || 0;
+        const totalWickets = bowlerBaseWickets + playerWicketsInMatch;
+        
+        return totalWickets > highestOtherWickets;
+    };
     const [groundPitch, setGroundPitch] = useState("Balanced Sporting Pitch");
     const [groundCode, setGroundCode] = useState("KCG");
 
@@ -595,11 +635,120 @@ export const useLiveMatch = (
             if (runs === 4) striker.fours++;
             if (runs === 6) striker.sixes++;
 
+            // --- IN-MATCH + CAREER MILESTONES DETECTION ---
+            let celebrationTitle = "";
+            let celebrationSubtitle = "";
+            let celebrationIcon = "";
+
+            if (isOut) {
+                consecutiveWicketsRef.current[currentBowlerId] = (consecutiveWicketsRef.current[currentBowlerId] || 0) + 1;
+            } else {
+                consecutiveWicketsRef.current[currentBowlerId] = 0;
+            }
+
+            // Batting Milestone Evaluation:
+            if (strikerDetails && strikerDetails.id !== 'unknown') {
+                const prevOverall = aggregateStats(strikerDetails, Object.values(Format));
+                const currentCareerRuns = prevOverall.runs + striker.runs;
+
+                if (prevOverall.runs < 1000 && currentCareerRuns >= 1000 && !celebratedMilestonesRef.current.has(`${striker.playerId}-career-1000`)) {
+                    celebrationTitle = "CAREER MILESTONE! 🌟";
+                    celebrationSubtitle = `CAREER MILESTONE! ${strikerDetails.name} completes 1000 career runs. Unbelievable landmark for his team!`;
+                    celebrationIcon = "🏏";
+                    celebratedMilestonesRef.current.add(`${striker.playerId}-career-1000`);
+                } else if (prevOverall.runs < 2000 && currentCareerRuns >= 2000 && !celebratedMilestonesRef.current.has(`${striker.playerId}-career-2000`)) {
+                    celebrationTitle = "CAREER MILESTONE! 🚀";
+                    celebrationSubtitle = `CAREER MILESTONE! ${strikerDetails.name} completes 2000 career runs! Incredibly consistent batting career!`;
+                    celebrationIcon = "🏏";
+                    celebratedMilestonesRef.current.add(`${striker.playerId}-career-2000`);
+                } else if (prevOverall.runs < 5000 && currentCareerRuns >= 5000 && !celebratedMilestonesRef.current.has(`${striker.playerId}-career-5000`)) {
+                    celebrationTitle = "CAREER MILESTONE! 🎪";
+                    celebrationSubtitle = `CAREER MILESTONE! ${strikerDetails.name} completes 5000 career runs! Absolute legend of modern cricket!`;
+                    celebrationIcon = "🏏";
+                    celebratedMilestonesRef.current.add(`${striker.playerId}-career-5000`);
+                } else if (oldRuns < 100 && striker.runs >= 100 && !celebratedMilestonesRef.current.has(`${striker.playerId}-match-100`)) {
+                    const totalHundreds = prevOverall.hundreds + 1;
+                    celebrationTitle = "CENTURY! 👑";
+                    if (totalHundreds >= 4) {
+                        celebrationSubtitle = `SEASON SENSATION! ${strikerDetails.name} reach 100 runs off ${striker.balls} balls. That's his 4th century this season!`;
+                    } else {
+                        celebrationSubtitle = `CENTURY! ${strikerDetails.name} scores brilliant 100 runs off ${striker.balls} balls. Incredible elegance!`;
+                    }
+                    celebrationIcon = "👑";
+                    celebratedMilestonesRef.current.add(`${striker.playerId}-match-100`);
+                } else if (oldRuns < 50 && striker.runs >= 50 && !celebratedMilestonesRef.current.has(`${striker.playerId}-match-50`)) {
+                    const totalFifties = prevOverall.fifties + prevOverall.hundreds + 1;
+                    celebrationTitle = "FIFTY! 🏏";
+                    if (totalFifties % 3 === 0) {
+                        celebrationSubtitle = `HOT FORM! ${strikerDetails.name} records his 3rd fifty/century in 12 games! Tremendous run consistency!`;
+                    } else {
+                        celebrationSubtitle = `FIFTY! ${strikerDetails.name} reaches 50 runs off ${striker.balls} balls. Class is permanent!`;
+                    }
+                    celebrationIcon = "🏏";
+                    celebratedMilestonesRef.current.add(`${striker.playerId}-match-50`);
+                } else if (oldRuns < 30 && striker.runs >= 30 && !celebratedMilestonesRef.current.has(`${striker.playerId}-match-30`)) {
+                    if (prevOverall.average > 35 || Math.random() < 0.3) {
+                        celebrationTitle = "IN THE ZONE! 🔥";
+                        celebrationSubtitle = `HOT STREAK! ${strikerDetails.name} completes crucial 30+ run stand! That's his 5th consecutive match with 30+ runs!`;
+                        celebrationIcon = "🔥";
+                        celebratedMilestonesRef.current.add(`${striker.playerId}-match-30`);
+                    }
+                } else if (striker.runs > oldRuns && !celebratedMilestonesRef.current.has(`${striker.playerId}-leader-runs`)) {
+                    if (checkTournamentRunLeading(striker.playerId, striker.runs)) {
+                        celebrationTitle = "TOURNAMENT LEADER! 🏆";
+                        celebrationSubtitle = `TOURNAMENT LEADER! ${strikerDetails.name} now has the most runs in the tournament! Sensational batsman!`;
+                        celebrationIcon = "✨";
+                        celebratedMilestonesRef.current.add(`${striker.playerId}-leader-runs`);
+                    }
+                }
+            }
+
             if (isOut) {
                 currentInning.wickets++;
                 bowler.wickets++;
                 striker.isOut = true;
                 striker.dismissalText = `b ${bowlerDetails.name}`;
+
+                // Bowling Milestone Evaluation:
+                if (bowlerDetails && bowlerDetails.id !== 'unknown') {
+                    const prevBowlerOverall = aggregateStats(bowlerDetails, Object.values(Format));
+                    const currentCareerWickets = prevBowlerOverall.wickets + bowler.wickets;
+                    const bowlerWicketsConsecutive = consecutiveWicketsRef.current[currentBowlerId] || 0;
+
+                    if (bowlerWicketsConsecutive === 3 && !celebratedMilestonesRef.current.has(`${bowler.playerId}-hattrick`)) {
+                        celebrationTitle = "HAT-TRICK! 🎩";
+                        celebrationSubtitle = `HAT-TRICK! ${bowlerDetails.name} takes 3 wickets in 3 consecutive deliveries! Historic event!`;
+                        celebrationIcon = "🎩";
+                        celebratedMilestonesRef.current.add(`${bowler.playerId}-hattrick`);
+                    } else if (bowler.wickets === 5 && !celebratedMilestonesRef.current.has(`${bowler.playerId}-match-5wkts`)) {
+                        celebrationTitle = "FIVE-FOR! 🖐️";
+                        celebrationSubtitle = `FIVE-FOR! ${bowlerDetails.name} takes 5 wickets in the match. Absolute spectacular masterclass!`;
+                        celebrationIcon = "🖐️";
+                        celebratedMilestonesRef.current.add(`${bowler.playerId}-match-5wkts`);
+                    } else if (bowler.wickets === 3 && !celebratedMilestonesRef.current.has(`${bowler.playerId}-match-3wkts`)) {
+                        celebrationTitle = "3-WICKET HAUL! 🎯";
+                        celebrationSubtitle = `3-WICKET HAUL! ${bowlerDetails.name} takes 3 wickets and dismantles opposition!`;
+                        celebrationIcon = "🎯";
+                        celebratedMilestonesRef.current.add(`${bowler.playerId}-match-3wkts`);
+                    } else if (prevBowlerOverall.wickets < 50 && currentCareerWickets >= 50 && !celebratedMilestonesRef.current.has(`${bowler.playerId}-career-50`)) {
+                        celebrationTitle = "CAREER MILESTONE! ☄️";
+                        celebrationSubtitle = `CAREER MILESTONE! ${bowlerDetails.name} completes 50 career wickets in this league! Elite bowling pedigree!`;
+                        celebrationIcon = "⚡";
+                        celebratedMilestonesRef.current.add(`${bowler.playerId}-career-50`);
+                    } else if (prevBowlerOverall.wickets < 100 && currentCareerWickets >= 100 && !celebratedMilestonesRef.current.has(`${bowler.playerId}-career-100`)) {
+                        celebrationTitle = "CAREER MILESTONE! 🪐";
+                        celebrationSubtitle = `CAREER MILESTONE! ${bowlerDetails.name} completes 100 career wickets in this league! Legendary status unlocked!`;
+                        celebrationIcon = "⚡";
+                        celebratedMilestonesRef.current.add(`${bowler.playerId}-career-100`);
+                    } else if (!celebratedMilestonesRef.current.has(`${bowler.playerId}-leader-wickets`)) {
+                        if (checkTournamentWicketLeading(bowler.playerId, bowler.wickets)) {
+                            celebrationTitle = "TOP WICKET TAKER! 🏆";
+                            celebrationSubtitle = `TOP WICKET TAKER! ${bowlerDetails.name} leads the wicket charts in this tournament! Taking Purple Cap!`;
+                            celebrationIcon = "✨";
+                            celebratedMilestonesRef.current.add(`${bowler.playerId}-leader-wickets`);
+                        }
+                    }
+                }
                 
                 newState.fallOfWickets.push({
                     score: currentInning.score,
@@ -741,6 +890,16 @@ export const useLiveMatch = (
                 }
             }
 
+            if (celebrationTitle) {
+                newState.celebration = {
+                    title: celebrationTitle,
+                    subtitle: celebrationSubtitle,
+                    icon: celebrationIcon
+                };
+                stopAutoPlay();
+                newState.autoPlayType = null;
+            }
+
             if (matchEnded) {
                 stopAutoPlay(); // Ensure stopped
                 const result: MatchResult = {
@@ -759,7 +918,35 @@ export const useLiveMatch = (
                     inn.batting.forEach(b => { if (b.runs > bestPerf) { bestPerf = b.runs; result.manOfTheMatch = { playerId: b.playerId, playerName: b.playerName, teamId: inn.teamId, summary: `${b.runs} runs` } } });
                 });
                 
-                setTimeout(() => onMatchComplete(result), 2000);
+                // Match Winner/Clutch Defence Celebration Popup Setup
+                if (currentInning.score > target!) {
+                    const topScorerChasingObj = [...currentInning.batting].sort((a,b) => b.runs - a.runs)[0];
+                    const topBatterDetails = getPlayerById(topScorerChasingObj?.playerId || '', allPlayers);
+                    if (topBatterDetails && topBatterDetails.id !== 'unknown') {
+                        newState.celebration = {
+                            title: "MATCH WINNER! 🏆",
+                            subtitle: `${topBatterDetails.name} scores ${topScorerChasingObj.runs}* and guides ${battingTeam.name} to a spectacular victory!`,
+                            icon: "🏏"
+                        };
+                    }
+                } else if (currentInning.score < target!) {
+                    const topBowlerDefendingObj = [...currentInning.bowling].sort((a,b) => b.wickets - a.wickets)[0];
+                    const topBowlerDetails = getPlayerById(topBowlerDefendingObj?.playerId || '', allPlayers);
+                    if (topBowlerDetails && topBowlerDetails.id !== 'unknown') {
+                        newState.celebration = {
+                            title: "CLUTCH DEFENCE! 🔒",
+                            subtitle: `${topBowlerDetails.name} takes ${topBowlerDefendingObj.wickets} wickets and defends the target successfully for ${bowlingTeam.name}!`,
+                            icon: "⚡"
+                        };
+                    }
+                }
+
+                if (newState.celebration) {
+                    pendingMatchResultRef.current = result;
+                    newState.autoPlayType = null;
+                } else {
+                    setTimeout(() => onMatchComplete(result), 2000);
+                }
             }
 
             return newState;
@@ -883,6 +1070,17 @@ export const useLiveMatch = (
         });
     };
 
+    const dismissCelebration = () => {
+        setState(prev => {
+            if (!prev) return null;
+            return { ...prev, celebration: undefined };
+        });
+        if (pendingMatchResultRef.current) {
+            onMatchComplete(pendingMatchResultRef.current);
+            pendingMatchResultRef.current = null;
+        }
+    };
+
     return {
         state,
         playBall,
@@ -896,6 +1094,7 @@ export const useLiveMatch = (
         selectNextBatter,
         selectNextBowler,
         startMatch,
-        proceedToMatch
+        proceedToMatch,
+        dismissCelebration
     };
 };
