@@ -25,6 +25,40 @@ export const App = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
   const { user, loading: firebaseLoading } = useFirebase();
+  const [authError, setAuthError] = useState<{ title: string; message: string; copyText?: string } | null>(null);
+
+  const handleSignIn = async () => {
+    showFeedback("Opening Sign-In...");
+    try {
+      const u = await signIn();
+      if (u) {
+        showFeedback(`Signed in as ${u.displayName || 'Manager'}!`);
+      }
+    } catch (err: any) {
+      console.error("Auth error caught in App.tsx:", err);
+      const code = err?.code || "";
+      let title = "Sign-In Action Required";
+      let message = "An error occurred during Google Sign-In. Please check your network and try again.";
+      let copyText = undefined;
+
+      if (code === "auth/unauthorized-domain" || err?.message?.includes("unauthorized-domain") || err?.message?.includes("auth/unauthorized-domain")) {
+        title = "Domain Not Whitelisted";
+        message = `To allow Google Sign-In, this site's domain must be authorized in your Firebase Project.\n\nOur environment relies on custom containers, which require adding the hostname below.\n\nInstructions:\n1. Open your Firebase Console.\n2. Go to Authentication -> Settings -> Authorized Domains.\n3. Add this specific hostname:\n   ${window.location.hostname}\n\nOnce authorized, try backing up or syncing your game!`;
+        copyText = window.location.hostname;
+      } else if (code === "auth/popup-blocked" || err?.message?.includes("popup-blocked")) {
+        title = "Pop-up Blocked";
+        message = "Your browser blocked the Google Sign-In window.\n\nPlease enable/allow pop-ups for this website in your browser settings and try again.";
+      } else if (code === "auth/popup-closed-by-user" || err?.message?.includes("popup-closed-by-user")) {
+        title = "Sign-In Cancelled";
+        message = "The Google Sign-In popup was closed before completion. Please try again.";
+      } else {
+        message = `Error Details: ${err?.message || err}`;
+      }
+
+      setAuthError({ title, message, copyText });
+      showFeedback("Sign-In Failed", "error");
+    }
+  };
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -269,7 +303,7 @@ export const App = () => {
         return <div className="bg-white dark:bg-gray-900 h-full flex items-center justify-center"><LoadingSpinner /></div>;
     }
     switch(appState) {
-        case 'MAIN_MENU': return <MainMenu onStartNewGame={handleStartNewGame} onResumeGame={resumeGame} hasSaveData={hasSaveData} user={user} onSignIn={signIn} onSignOut={signOutUser} />;
+        case 'MAIN_MENU': return <MainMenu onStartNewGame={handleStartNewGame} onResumeGame={resumeGame} hasSaveData={hasSaveData} user={user} onSignIn={handleSignIn} onSignOut={signOutUser} />;
         case 'TEAM_SELECTION': return <TeamSelection onTeamSelected={initializeNewGame} theme={theme} />;
         case 'AUCTION': return gameData ? <AuctionRoom gameData={gameData} onAuctionComplete={handleAuctionComplete} /> : null;
         case 'CAREER_HUB': return gameData ? <CareerHub gameData={gameData} setGameData={setGameData} onResetGame={resetGame} theme={theme} setTheme={setTheme} saveGame={saveGame} loadGame={loadGame} showFeedback={showFeedback} /> : null;
@@ -296,6 +330,34 @@ export const App = () => {
             <div className={`absolute bottom-28 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg z-50 shadow-lg text-white font-semibold ${feedbackMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
                 {feedbackMessage.text}
             </div>
+        )}
+        {authError && (
+          <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-6 z-[100] animate-fade-in">
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl w-full max-w-sm text-center space-y-4 shadow-2xl relative text-white">
+              <div className="text-4xl">⚠️</div>
+              <h3 className="text-lg font-black text-rose-400 uppercase tracking-tight">{authError.title}</h3>
+              <p className="text-xs text-slate-300 leading-relaxed text-left whitespace-pre-line bg-slate-950/50 p-3.5 rounded-xl border border-white/5 font-mono max-h-[195px] overflow-y-auto">
+                {authError.message}
+              </p>
+              {authError.copyText && (
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(authError.copyText!);
+                    showFeedback("Copied to clipboard!");
+                  }}
+                  className="w-full py-2 bg-teal-500 hover:bg-teal-400 text-black rounded-xl font-bold text-xs uppercase tracking-wider transition-all active:scale-95"
+                >
+                  Copy Hostname
+                </button>
+              )}
+              <button
+                onClick={() => setAuthError(null)}
+                className="w-full py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

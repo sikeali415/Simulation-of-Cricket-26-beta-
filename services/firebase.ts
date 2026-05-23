@@ -119,8 +119,8 @@ export const signIn = async () => {
         const result = await signInWithPopup(auth, googleProvider);
         return result.user;
     } catch (error) {
-        console.error("Sign in error:", error);
-        return null;
+        console.error("Firebase Sign in error:", error);
+        throw error;
     }
 };
 

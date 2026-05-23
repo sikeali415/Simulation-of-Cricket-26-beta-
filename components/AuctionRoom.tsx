@@ -72,6 +72,8 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
     const [biddingLog, setBiddingLog] = useState<string[]>([]);
     const [auctionFinished, setAuctionFinished] = useState(false);
     const [currentLotBids, setCurrentLotBids] = useState<{teamName: string, bid: number}[]>([]);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [lotStatus, setLotStatus] = useState<{ text: string; color: string } | null>(null);
 
     const currentPlayer = sortedPool[currentPlayerIdx] || null;
     const userTeam = teams.find(t => t.id === gameData.userTeamId);
@@ -111,13 +113,14 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
         const bp = getBasePrice(player);
         setCurrentBid(bp);
         setHighestBidderId(null);
+        setLotStatus(null);
         setIsAuctioning(true);
         setCurrentLotBids([]);
         setBiddingLog(prev => [`Lot #${currentPlayerIdx + 1}: ${player.name} (${getRoleFullName(player.role)}) up for ${bp.toFixed(2)} Cr`, ...prev.slice(0, 5)]);
     }, [currentPlayerIdx, sortedPool, auctionFinished]);
 
     const handleUserBid = () => {
-        if (!userTeam || !isAuctioning || !currentPlayer) return;
+        if (!userTeam || !isAuctioning || !currentPlayer || isTransitioning) return;
         
         if (currentPlayer.isForeign && userTeam.squad.filter(p => p.isForeign).length >= MAX_FOREIGN_LIMIT) {
             setBiddingLog(prev => [`Foreign limit reached!`, ...prev.slice(0, 5)]);
@@ -135,8 +138,9 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
     };
 
     const skipPlayer = () => {
-        if (!currentPlayer || !isAuctioning) return;
+        if (!currentPlayer || !isAuctioning || isTransitioning) return;
         setIsAuctioning(false);
+        setIsTransitioning(true);
 
         const eligibleTeams = teams.filter(t => 
             mainTeamIds.includes(t.id) &&
@@ -155,12 +159,20 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
                 }
                 return t;
             }));
-            setBiddingLog(prev => [`Sold to ${winner.name} for ${finalPrice.toFixed(2)} Cr`, ...prev]);
+            const msg = `PASSED! Sold to ${winner.name} for ${finalPrice.toFixed(2)} Cr`;
+            setBiddingLog(prev => [msg, ...prev]);
+            setLotStatus({ text: `PASSED! SOLD TO ${winner.name.toUpperCase()} for ${finalPrice.toFixed(2)} Cr`, color: 'text-amber-400 font-black' });
         } else {
-            setBiddingLog(prev => [`Unsold: ${currentPlayer.name}`, ...prev]);
+            const msg = `PASSED & UNSOLD: ${currentPlayer.name}`;
+            setBiddingLog(prev => [msg, ...prev]);
+            setLotStatus({ text: 'PASSED & UNSOLD', color: 'text-zinc-500 font-bold' });
         }
         
-        setTimeout(() => setCurrentPlayerIdx(prev => prev + 1), 200);
+        setTimeout(() => {
+            setLotStatus(null);
+            setIsTransitioning(false);
+            setCurrentPlayerIdx(prev => prev + 1);
+        }, 1800);
     };
 
     const autoAuctionRemaining = () => {
@@ -169,7 +181,7 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
     };
 
     useEffect(() => {
-        if (!isAuctioning || !currentPlayer || auctionFinished) return;
+        if (!isAuctioning || !currentPlayer || auctionFinished || isTransitioning) return;
 
         const timer = setTimeout(() => {
             const increment = getBidIncrement(currentBid);
@@ -243,10 +255,11 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
         }, 500 + Math.random() * 500);
 
         return () => clearTimeout(timer);
-    }, [isAuctioning, currentBid, highestBidderId, currentPlayer, gameData.userTeamId, mainTeamIds, teams]);
+    }, [isAuctioning, currentBid, highestBidderId, currentPlayer, gameData.userTeamId, mainTeamIds, teams, isTransitioning]);
 
     const sellPlayer = () => {
         setIsAuctioning(false);
+        setIsTransitioning(true);
         const winner = teams.find(t => t.id === highestBidderId);
         if (winner && currentPlayer) {
             setTeams(prev => prev.map(t => {
@@ -259,22 +272,37 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
                 }
                 return t;
             }));
-            setBiddingLog(prev => [`SOLD! ${currentPlayer.name} to ${winner.name}`, ...prev]);
+            const msg = `SOLD! ${currentPlayer.name} to ${winner.name} for ${currentBid.toFixed(2)} Cr`;
+            setBiddingLog(prev => [msg, ...prev]);
+            setLotStatus({ text: `SOLD TO ${winner.name.toUpperCase()} for ${currentBid.toFixed(2)} Cr!`, color: 'text-emerald-400 font-extrabold' });
         }
-        setTimeout(() => setCurrentPlayerIdx(prev => prev + 1), 600);
+        setTimeout(() => {
+            setLotStatus(null);
+            setIsTransitioning(false);
+            setCurrentPlayerIdx(prev => prev + 1);
+        }, 1500);
     };
 
     const unsoldPlayer = () => {
         setIsAuctioning(false);
-        setBiddingLog(prev => [`UNSOLD: ${currentPlayer.name}`, ...prev]);
-        setTimeout(() => setCurrentPlayerIdx(prev => prev + 1), 600);
+        setIsTransitioning(true);
+        if (currentPlayer) {
+            const msg = `UNSOLD: ${currentPlayer.name}`;
+            setBiddingLog(prev => [msg, ...prev]);
+            setLotStatus({ text: 'UNSOLD', color: 'text-red-500 font-extrabold' });
+        }
+        setTimeout(() => {
+            setLotStatus(null);
+            setIsTransitioning(false);
+            setCurrentPlayerIdx(prev => prev + 1);
+        }, 1500);
     };
 
     useEffect(() => {
-        if (!isAuctioning && !auctionFinished) {
+        if (!isAuctioning && !isTransitioning && !auctionFinished) {
             startNextPlayer();
         }
-    }, [currentPlayerIdx, sortedPool, isAuctioning, auctionFinished, startNextPlayer]);
+    }, [currentPlayerIdx, sortedPool, isAuctioning, isTransitioning, auctionFinished, startNextPlayer]);
 
     const finishAuction = () => {
         const soldPlayerIds = new Set(teams.flatMap(t => t.squad.map(p => p.id)));
@@ -410,15 +438,24 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
                                     </div>
                                 </div>
 
-                                <div className="bg-black/40 rounded-2xl p-4 mb-4 text-center border border-white/5">
-                                    <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest block mb-2">CURRENT BID</span>
-                                    <div className="text-6xl font-black text-yellow-400 tabular-nums tracking-tighter">
-                                        {currentBid.toFixed(2)} <span className="text-2xl ml-[-10px]">Cr</span>
+                                {lotStatus ? (
+                                    <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 mb-4 text-center min-h-[96px] flex flex-col items-center justify-center animate-pulse shadow-md">
+                                        <span className="text-[10px] text-teal-500 font-bold uppercase tracking-widest block mb-1">Lot Status</span>
+                                        <div className={`text-sm font-black ${lotStatus.color} tracking-tight leading-snug px-2`}>
+                                            {lotStatus.text}
+                                        </div>
                                     </div>
-                                    <div className="mt-1 text-xs font-bold text-slate-400 uppercase tracking-widest truncate">
-                                        {highestBidderId ? `Leading: ${teams.find(t => t.id === highestBidderId)?.name}` : 'Awaiting Bids'}
+                                ) : (
+                                    <div className="bg-black/40 rounded-2xl p-4 mb-4 text-center border border-white/5 min-h-[96px] flex flex-col justify-center">
+                                        <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest block mb-1">CURRENT BID</span>
+                                        <div className="text-5xl font-black text-yellow-400 tabular-nums tracking-tighter">
+                                            {currentBid.toFixed(2)} <span className="text-xl ml-[-10px]">Cr</span>
+                                        </div>
+                                        <div className="mt-1 text-xs font-bold text-slate-400 uppercase tracking-widest truncate">
+                                            {highestBidderId ? `Leading: ${teams.find(t => t.id === highestBidderId)?.name}` : 'Awaiting Bids'}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Bidding History for current lot */}
                                 <div className="flex-1 overflow-y-auto mb-4 space-y-2 pr-1">
@@ -450,8 +487,20 @@ const AuctionRoom: React.FC<AuctionRoomProps> = ({ gameData, onAuctionComplete }
                                     </button>
                                     
                                     <div className="grid grid-cols-2 gap-3 mt-1">
-                                        <button onClick={skipPlayer} className="bg-slate-900/60 hover:bg-slate-700 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5">Pass / Skip</button>
-                                        <button onClick={autoAuctionRemaining} className="bg-red-950/40 hover:bg-red-900/60 border border-red-900/50 py-4 rounded-2xl text-[10px] font-black text-red-300 uppercase tracking-widest">Random Auto-Draft</button>
+                                        <button 
+                                            onClick={skipPlayer} 
+                                            disabled={!isAuctioning || isTransitioning}
+                                            className="bg-slate-900/60 hover:bg-slate-700 disabled:opacity-30 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 active:scale-95 transition-all"
+                                        >
+                                            Pass / Skip
+                                        </button>
+                                        <button 
+                                            onClick={autoAuctionRemaining} 
+                                            disabled={!isAuctioning || isTransitioning}
+                                            className="bg-red-950/40 hover:bg-red-900/60 disabled:opacity-30 border border-red-900/50 py-4 rounded-2xl text-[10px] font-black text-red-300 uppercase tracking-widest active:scale-95 transition-all"
+                                        >
+                                            Random Auto-Draft
+                                        </button>
                                     </div>
                                 </div>
                             </div>
