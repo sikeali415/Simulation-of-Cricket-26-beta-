@@ -639,7 +639,6 @@ export const useLiveMatch = (
             let celebrationTitle = "";
             let celebrationSubtitle = "";
             let celebrationIcon = "";
-            let celebrationPlayer: any = null;
 
             if (isOut) {
                 consecutiveWicketsRef.current[currentBowlerId] = (consecutiveWicketsRef.current[currentBowlerId] || 0) + 1;
@@ -702,24 +701,6 @@ export const useLiveMatch = (
                         celebratedMilestonesRef.current.add(`${striker.playerId}-leader-runs`);
                     }
                 }
-                if (celebrationTitle) {
-                    celebrationPlayer = {
-                        name: strikerDetails.name,
-                        teamName: battingTeam.name,
-                        role: strikerDetails.role,
-                        isBatsman: true,
-                        matchContribution: `${striker.runs} off ${striker.balls} balls (${striker.fours}x4, ${striker.sixes}x6)`,
-                        stats: {
-                            matches: prevOverall.matches + 1,
-                            runs: prevOverall.runs + striker.runs,
-                            strikeRate: Number(((prevOverall.runs + striker.runs) / Math.max(1, prevOverall.ballsFaced + striker.balls) * 100).toFixed(1)),
-                            average: Number(((prevOverall.runs + striker.runs) / Math.max(1, prevOverall.dismissals + (striker.isOut ? 1 : 0))).toFixed(1)),
-                            fifties: prevOverall.fifties + (striker.runs >= 50 && striker.runs < 100 ? 1 : 0),
-                            hundreds: prevOverall.hundreds + (striker.runs >= 100 ? 1 : 0),
-                            highestScore: Math.max(prevOverall.highestScore, striker.runs)
-                        }
-                    };
-                }
             }
 
             if (isOut) {
@@ -766,24 +747,6 @@ export const useLiveMatch = (
                             celebrationIcon = "✨";
                             celebratedMilestonesRef.current.add(`${bowler.playerId}-leader-wickets`);
                         }
-                    }
-                    if (celebrationTitle) {
-                        celebrationPlayer = {
-                            name: bowlerDetails.name,
-                            teamName: bowlingTeam.name,
-                            role: bowlerDetails.role,
-                            isBatsman: false,
-                            matchContribution: `${bowler.wickets}/${bowler.runsConceded} in ${bowler.overs} overs`,
-                            stats: {
-                                matches: prevBowlerOverall.matches + 1,
-                                wickets: prevBowlerOverall.wickets + bowler.wickets,
-                                economy: Number(((prevBowlerOverall.runsConceded + bowler.runsConceded) / Math.max(6, prevBowlerOverall.ballsBowled + bowler.ballsBowled) * 6).toFixed(2)),
-                                average: Number(((prevBowlerOverall.runsConceded + bowler.runsConceded) / Math.max(1, prevBowlerOverall.wickets + bowler.wickets)).toFixed(2)),
-                                threeWKs: prevBowlerOverall.threeWicketHauls + (bowler.wickets === 3 ? 1 : 0),
-                                fiveWKs: prevBowlerOverall.fiveWicketHauls + (bowler.wickets >= 5 ? 1 : 0),
-                                bestBowling: bowler.wickets > prevBowlerOverall.bestBowlingWickets ? `${bowler.wickets}/${bowler.runsConceded}` : (prevBowlerOverall.bestBowling || '-')
-                            }
-                        };
                     }
                 }
                 
@@ -931,8 +894,7 @@ export const useLiveMatch = (
                 newState.celebration = {
                     title: celebrationTitle,
                     subtitle: celebrationSubtitle,
-                    icon: celebrationIcon,
-                    player: celebrationPlayer
+                    icon: celebrationIcon
                 };
                 stopAutoPlay();
                 newState.autoPlayType = null;

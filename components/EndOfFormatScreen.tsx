@@ -306,95 +306,33 @@ const EndOfFormatScreen: React.FC<EndOfFormatScreenProps> = ({ gameData, handleF
     }
 
     return (
-        <div className="p-6 text-center flex flex-col justify-between min-h-full bg-slate-950 text-white overflow-y-auto">
-            <div className="space-y-6">
-                <div>
-                    <span className="text-[10px] font-black tracking-widest text-teal-400 uppercase bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-full">{lastAward?.format} Tournament Finished</span>
-                    <h2 className="text-3xl font-black italic tracking-tighter uppercase mt-3 mb-1 text-white">Season Finale</h2>
-                    <p className="text-xs text-slate-400 capitalize font-medium">{lastAward?.format} champions crowned & seasonal honors awarded.</p>
+        <div className="p-4 text-center flex flex-col justify-between h-full bg-slate-900 overflow-y-auto">
+            <div>
+                <h2 className="text-3xl font-bold mb-2 text-white">{lastAward?.format} Complete!</h2>
+                <div className="my-4 bg-yellow-400/20 border-2 border-yellow-500 rounded-2xl p-6">
+                    <p className="text-lg font-semibold text-yellow-300">Champions</p>
+                    <p className="text-4xl font-black italic uppercase tracking-tighter text-white">{lastAward?.winnerTeamName}</p>
                 </div>
-
-                {/* Championship Glory Card */}
-                <div className="relative overflow-hidden bg-gradient-to-b from-amber-500/20 to-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-                    {/* Golden Trophy Graphic */}
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 mx-auto mb-2 text-amber-500 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)] animate-pulse">
-                      <path d="M19 4h-2V2H7v2H5c-1.1 0-2 .9-2 2v3c0 1.88 1.31 3.47 3.09 3.86C6.72 14.47 8.91 16 11.5 16h1c2.59 0 4.78-1.53 5.41-3.14c1.78-.39 3.09-1.98 3.09-3.86V6c0-1.1-.9-2-2-2zM5 9V6h2v4.86C5.81 10.45 5 9.8 5 9zm14 0c0 .8-.81 1.45-2 1.86V6h2v3zm-4 7h-6v2h6v-2zm2 3H7v2h10v-2z"/>
-                    </svg>
-                    
-                    <p className="text-xs font-black uppercase text-amber-400 tracking-widest mb-1">CHAMPIONSHIP GLORY</p>
-                    <p className="text-3xl font-black italic uppercase tracking-tighter text-white drop-shadow-md">{lastAward?.winnerTeamName}</p>
-                    <p className="text-[10px] text-amber-200/60 mt-2 font-mono uppercase tracking-widest">Season {lastAward?.season} Winners</p>
-                </div>
-
-                {/* Awards Cabinet */}
-                <div className="space-y-3">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 text-left pl-1">🏆 Season Accolades</h3>
-                    
-                    <div className="grid grid-cols-2 gap-3 pb-4 text-left">
-                        {/* MVP (Player of the Season) */}
-                        <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-emerald-400 mb-2">⭐ Player of Season</p>
-                                <p className="font-extrabold text-sm text-white leading-tight truncate">{lastAward?.mvp?.playerName || 'N/A'}</p>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase truncate mt-0.5">{lastAward?.mvp?.teamName || 'N/A'}</p>
-                            </div>
-                            <div className="mt-4 pt-2 border-t border-slate-800/50">
-                                <span className="text-xs font-mono font-bold text-emerald-400">{lastAward?.mvp?.points || '0'} <span className="text-[9px] text-slate-500">Pts</span></span>
-                            </div>
-                        </div>
-
-                        {/* Power Hitter of the Season */}
-                        <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-amber-400 mb-2 font-sans">🔥 Power Hitter</p>
-                                <p className="font-extrabold text-sm text-white leading-tight truncate">{lastAward?.powerHitter?.playerName || 'N/A'}</p>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase truncate mt-0.5">{lastAward?.powerHitter?.teamName || 'N/A'}</p>
-                            </div>
-                            <div className="mt-4 pt-2 border-t border-slate-800/50">
-                                <span className="text-xs font-mono font-bold text-amber-400">SR {lastAward?.powerHitter?.strikeRate || '0'}</span>
-                            </div>
-                        </div>
-
-                        {/* Best Batter (Orange Cap) */}
-                        <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-blue-400 mb-2">🏏 Batter of Season</p>
-                                <p className="font-extrabold text-sm text-white leading-tight truncate">{lastAward?.bestBatter.playerName}</p>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase truncate mt-0.5">{lastAward?.bestBatter.teamName}</p>
-                            </div>
-                            <div className="mt-4 pt-2 border-t border-slate-800/50">
-                                <span className="text-xs font-mono font-bold text-blue-400">{lastAward?.bestBatter.runs} <span className="text-[9px] text-slate-500">Runs</span></span>
-                            </div>
-                        </div>
-
-                        {/* Best Bowler (Purple Cap) */}
-                        <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-purple-400 mb-2">⚡ Bowler of Season</p>
-                                <p className="font-extrabold text-sm text-white leading-tight truncate">{lastAward?.bestBowler.playerName}</p>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase truncate mt-0.5">{lastAward?.bestBowler.teamName}</p>
-                            </div>
-                            <div className="mt-4 pt-2 border-t border-slate-800/50">
-                                <span className="text-xs font-mono font-bold text-purple-400">{lastAward?.bestBowler.wickets} <span className="text-[9px] text-slate-500">Wickets</span></span>
-                            </div>
-                        </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-blue-400/10 border-2 border-blue-500/30 rounded-2xl p-4">
+                        <p className="font-bold text-blue-400 text-xs uppercase mb-1">Best Batter</p>
+                        <p className="font-bold text-white truncate">{lastAward?.bestBatter.playerName}</p>
+                        <p className="text-2xl font-black text-white">{lastAward?.bestBatter.runs}</p>
+                    </div>
+                    <div className="bg-red-400/10 border-2 border-red-500/30 rounded-2xl p-4">
+                         <p className="font-bold text-red-400 text-xs uppercase mb-1">Best Bowler</p>
+                        <p className="font-bold text-white truncate">{lastAward?.bestBowler.playerName}</p>
+                        <p className="text-2xl font-black text-white">{lastAward?.bestBowler.wickets}</p>
                     </div>
                 </div>
             </div>
-
             <div className="mt-6 space-y-4">
                 {nextFormat ? (
-                    <button 
-                        onClick={() => handleFormatChange(nextFormat)} 
-                        className="w-full bg-teal-500 text-slate-950 font-black py-5 px-10 text-lg rounded-3xl shadow-2xl uppercase italic tracking-tighter hover:bg-teal-400 transition-all active:scale-95"
-                    >
+                    <button onClick={() => handleFormatChange(nextFormat)} className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-5 px-10 text-xl rounded-2xl shadow-lg uppercase italic tracking-tighter">
                         Proceed to {nextFormat}
                     </button>
                 ) : (
-                    <button 
-                        onClick={() => setView('retention')} 
-                        className="w-full bg-teal-500 text-slate-950 font-black py-5 px-10 text-lg rounded-3xl shadow-2xl uppercase italic tracking-tighter hover:bg-teal-400 transition-all active:scale-95"
-                    >
+                    <button onClick={() => setView('retention')} className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-5 px-10 text-xl rounded-2xl shadow-lg uppercase italic tracking-tighter">
                         End Season & Retain Players
                     </button>
                 )}

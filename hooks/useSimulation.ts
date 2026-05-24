@@ -519,7 +519,6 @@ export const useSimulation = (gameData: GameData, setGameData: React.Dispatch<Re
                 if (!player.stats[format]) player.stats[format] = generateSingleFormatInitialStats();
                 const stats = player.stats[format]; 
                 stats.matches += (inning === result.firstInning || inning === result.secondInning ? 1 : 0); 
-                stats.inningsBatting = (stats.inningsBatting || 0) + 1;
                 stats.runs += batPerf.runs; 
                 stats.ballsFaced += batPerf.balls; 
                 if (batPerf.isOut) stats.dismissals++; 
@@ -599,7 +598,6 @@ export const useSimulation = (gameData: GameData, setGameData: React.Dispatch<Re
                 if (!player) continue; 
                 if (!player.stats[format]) player.stats[format] = generateSingleFormatInitialStats();
                 const stats = player.stats[format]; 
-                stats.inningsBowling = (stats.inningsBowling || 0) + 1;
                 stats.wickets += bowlPerf.wickets; 
                 stats.runsConceded += bowlPerf.runsConceded; 
                 stats.ballsBowled += bowlPerf.ballsBowled;

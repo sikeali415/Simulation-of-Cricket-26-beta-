@@ -206,37 +206,12 @@ const CareerHub: React.FC<CareerHubProps> = ({ gameData, setGameData, onResetGam
                 gameData.teams.forEach(team => team.squad.forEach(player => {
                     const p = getPlayerById(player.id, gameData.allPlayers);
                     if (p) {
-                       const fstats = p.stats[gameData.currentFormat];
-                       const runs = fstats.runs || 0;
-                       const wickets = fstats.wickets || 0;
-                       const ballsFaced = fstats.ballsFaced || 0;
-                       const strikeRate = ballsFaced > 0 ? (runs / ballsFaced) * 100 : 0;
-                       const mvpPoints = runs * 1.0 + wickets * 22;
-
-                       formatStats.set(p.id, { 
-                           runs, 
-                           wickets, 
-                           ballsFaced,
-                           strikeRate,
-                           mvpPoints,
-                           teamName: team.name, 
-                           playerName: p.name 
-                       });
+                       formatStats.set(p.id, { runs: p.stats[gameData.currentFormat].runs, wickets: p.stats[gameData.currentFormat].wickets, teamName: team.name, playerName: p.name })
                     }
                 }));
 
                 const sortedBatters = [...formatStats.entries()].sort((a, b) => b[1].runs - a[1].runs);
                 const sortedBowlers = [...formatStats.entries()].sort((a, b) => b[1].wickets - a[1].wickets);
-                const sortedMvps = [...formatStats.entries()].sort((a, b) => b[1].mvpPoints - a[1].mvpPoints);
-                
-                let filteredPowerHitters = [...formatStats.entries()].filter(entry => entry[1].runs >= 150);
-                if (filteredPowerHitters.length === 0) {
-                    filteredPowerHitters = [...formatStats.entries()].filter(entry => entry[1].runs >= 50);
-                }
-                if (filteredPowerHitters.length === 0) {
-                    filteredPowerHitters = [...formatStats.entries()];
-                }
-                const sortedPowerHitters = filteredPowerHitters.sort((a, b) => b[1].strikeRate - a[1].strikeRate);
 
                 const finalMatchNumber = schedule[schedule.length-1].matchNumber;
                 const lastMatchResult = gameData.matchResults[gameData.currentFormat].find(r => r.matchNumber === finalMatchNumber);
@@ -248,9 +223,7 @@ const CareerHub: React.FC<CareerHubProps> = ({ gameData, setGameData, onResetGam
                     winnerTeamId: winnerTeam?.id || '', 
                     winnerTeamName: winnerTeam?.name || 'N/A', 
                     bestBatter: { playerId: sortedBatters[0]?.[0] || '', playerName: sortedBatters[0]?.[1].playerName || 'N/A', teamName: sortedBatters[0]?.[1].teamName || 'N/A', runs: sortedBatters[0]?.[1].runs || 0 }, 
-                    bestBowler: { playerId: sortedBowlers[0]?.[0] || '', playerName: sortedBowlers[0]?.[1].playerName || 'N/A', teamName: sortedBowlers[0]?.[1].teamName || 'N/A', wickets: sortedBowlers[0]?.[1].wickets || 0 },
-                    mvp: { playerId: sortedMvps[0]?.[0] || '', playerName: sortedMvps[0]?.[1].playerName || 'N/A', teamName: sortedMvps[0]?.[1].teamName || 'N/A', points: Number((sortedMvps[0]?.[1].mvpPoints || 0).toFixed(1)) },
-                    powerHitter: { playerId: sortedPowerHitters[0]?.[0] || '', playerName: sortedPowerHitters[0]?.[1].playerName || 'N/A', teamName: sortedPowerHitters[0]?.[1].teamName || 'N/A', strikeRate: Number((sortedPowerHitters[0]?.[1].strikeRate || 0).toFixed(1)) }
+                    bestBowler: { playerId: sortedBowlers[0]?.[0] || '', playerName: sortedBowlers[0]?.[1].playerName || 'N/A', teamName: sortedBowlers[0]?.[1].teamName || 'N/A', wickets: sortedBowlers[0]?.[1].wickets || 0 } 
                 };
 
                 setGameData(prev => prev ? { ...prev, awardsHistory: [...prev.awardsHistory, newAward] } : null);

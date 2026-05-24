@@ -56,38 +56,10 @@ const AwardsAndRecordsScreen: React.FC<AwardsRecordsScreenProps> = ({ gameData }
                                 <h4 className="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-300">Season {season}</h4>
                                 <div className="space-y-3">
                                     {awards.map((award: any) => (
-                                        <div key={award.format} className="bg-zinc-900 border border-zinc-800 p-4 rounded-2xl shadow-lg space-y-2">
-                                            <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
-                                                <p className="font-black italic text-sm tracking-tight text-white uppercase">{award.format}</p>
-                                                <span className="text-[10px] font-bold uppercase py-0.5 px-2 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Champions</span>
-                                            </div>
-                                            <p className="text-lg font-black text-yellow-500 uppercase italic tracking-tighter">{award.winnerTeamName}</p>
-                                            <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                                                <div className="bg-zinc-950/55 p-2.5 rounded-xl border border-zinc-800/50">
-                                                    <p className="text-blue-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">🏏 Orange Cap (Most Runs)</p>
-                                                    <p className="font-extrabold text-white truncate">{award.bestBatter.playerName}</p>
-                                                    <p className="text-[10px] text-zinc-400 font-medium">{award.bestBatter.runs} runs • {award.bestBatter.teamName}</p>
-                                                </div>
-                                                <div className="bg-zinc-950/55 p-2.5 rounded-xl border border-zinc-800/50">
-                                                    <p className="text-purple-400 font-bold uppercase tracking-wider text-[10px] mb-0.5">⚡ Purple Cap (Most Wkts)</p>
-                                                    <p className="font-extrabold text-white truncate">{award.bestBowler.playerName}</p>
-                                                    <p className="text-[10px] text-zinc-400 font-medium">{award.bestBowler.wickets} wickets • {award.bestBowler.teamName}</p>
-                                                </div>
-                                                {award.mvp && (
-                                                    <div className="bg-zinc-950/55 p-2.5 rounded-xl border border-zinc-800/50 col-span-1">
-                                                        <p className="text-emerald-400 font-bold uppercase tracking-wider text-[10px] mb-0.5 font-sans">🏆 Player of the Season</p>
-                                                        <p className="font-extrabold text-white truncate">{award.mvp.playerName}</p>
-                                                        <p className="text-[10px] text-zinc-400 font-medium">{award.mvp.points} Pts • {award.mvp.teamName}</p>
-                                                    </div>
-                                                )}
-                                                {award.powerHitter && (
-                                                    <div className="bg-zinc-950/55 p-2.5 rounded-xl border border-zinc-800/50 col-span-1">
-                                                        <p className="text-amber-400 font-bold uppercase tracking-wider text-[10px] mb-0.5 font-sans">🔥 Power Hitter of Season</p>
-                                                        <p className="font-extrabold text-white truncate">{award.powerHitter.playerName}</p>
-                                                        <p className="text-[10px] text-zinc-400 font-medium">SR {award.powerHitter.strikeRate} • {award.powerHitter.teamName}</p>
-                                                    </div>
-                                                )}
-                                            </div>
+                                        <div key={award.format} className="bg-white dark:bg-gray-800/50 p-3 rounded-lg shadow-sm">
+                                            <p className="font-bold">{award.format} Champions: <span className="text-yellow-600 dark:text-yellow-400">{award.winnerTeamName}</span></p>
+                                            <p className="text-sm mt-1">Best Batter: {award.bestBatter.playerName} ({award.bestBatter.runs} runs)</p>
+                                            <p className="text-sm">Best Bowler: {award.bestBowler.playerName} ({award.bestBowler.wickets} wickets)</p>
                                         </div>
                                     ))}
                                 </div>

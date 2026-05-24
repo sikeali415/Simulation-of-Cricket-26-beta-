@@ -986,136 +986,31 @@ const LiveMatchScreen: React.FC<LiveMatchScreenProps> = ({ match, gameData, onMa
             {/* Achievement & Milestone Celebration Popup */}
             {state.celebration && (
                 <div className="absolute inset-0 bg-black/85 z-[150] flex flex-col items-center justify-center p-6 animate-fade-in backdrop-blur-xs">
-                    {state.celebration.player ? (
-                        <div className="max-w-md w-full bg-slate-900/95 border-2 border-teal-500/50 rounded-2xl shadow-2xl p-6 text-center transform scale-100 transition-all relative overflow-hidden">
-                            {/* Accent Glow Backdrops */}
-                            <div className="absolute -top-12 -left-12 w-24 h-24 bg-teal-500/10 rounded-full blur-xl animate-pulse"></div>
-                            <div className="absolute -bottom-12 -right-12 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl animate-pulse"></div>
-                            <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-cyan-500/10 rounded-2xl blur-lg pointer-events-none"></div>
-
-                            <div className="relative z-10 space-y-4">
-                                <div className="text-5xl animate-bounce mb-1 block">
-                                    {state.celebration.icon || '🏆'}
-                                </div>
-
-                                <div className="space-y-0.5">
-                                    <span className="inline-block px-3 py-1 text-[10px] lg:text-xs font-black uppercase tracking-widest bg-teal-500/10 text-teal-400 rounded-full border border-teal-500/20 shadow-xs mb-1">
-                                        {state.celebration.title}
-                                    </span>
-                                    <h3 className="text-xl font-bold tracking-tight text-white mb-0.5">
-                                        {state.celebration.player.name}
-                                    </h3>
-                                    <p className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                                        🏏 {state.celebration.player.role} | {state.celebration.player.teamName}
-                                    </p>
-                                </div>
-
-                                <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700/50 shadow-inner">
-                                    <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider mb-0.5">MATCH PERFORMANCE</span>
-                                    <p className="text-sm font-black text-rose-400 tracking-wide">
-                                        {state.celebration.player.matchContribution}
-                                    </p>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <hr className="flex-grow border-slate-800" />
-                                        <span className="text-[9px] font-extrabold text-slate-500 tracking-widest uppercase">LIVING CAREER STATS</span>
-                                        <hr className="flex-grow border-slate-800" />
-                                    </div>
-
-                                    {state.celebration.player.isBatsman ? (
-                                        <div className="grid grid-cols-3 gap-2 text-center">
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Matches</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.matches}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Runs</span>
-                                                <span className="text-xs font-black text-teal-400">{state.celebration.player.stats.runs}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">S/R</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.strikeRate}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Avg</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.average}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">50s / 100s</span>
-                                                <span className="text-xs font-black text-amber-400">{state.celebration.player.stats.fifties} / {state.celebration.player.stats.hundreds}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Highest Score</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.highestScore}</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-3 gap-2 text-center">
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Matches</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.matches}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Wickets</span>
-                                                <span className="text-xs font-black text-rose-400">{state.celebration.player.stats.wickets}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Economy</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.economy}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Avg</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.average}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">3W / 5W</span>
-                                                <span className="text-xs font-black text-amber-400">{state.celebration.player.stats.threeWKs} / {state.celebration.player.stats.fiveWKs}</span>
-                                            </div>
-                                            <div className="bg-slate-950/40 border border-slate-800 p-2 rounded-xl flex flex-col justify-center min-h-[50px]">
-                                                <span className="text-[8px] font-bold text-slate-400 block uppercase tracking-wider">Best Bowling</span>
-                                                <span className="text-xs font-black text-white">{state.celebration.player.stats.bestBowling}</span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="pt-2">
-                                    <button
-                                        onClick={dismissCelebration}
-                                        className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 active:scale-95 text-white font-black uppercase tracking-widest text-[10px] py-2.5 px-6 rounded-full shadow-lg transition-all border border-teal-400/30"
-                                    >
-                                        Awesome, Carry On! 🔘
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="max-w-md w-full bg-slate-880 border-4 border-yellow-500 rounded-2xl shadow-2xl p-6 text-center transform scale-100 transition-all relative overflow-hidden">
-                            {/* Shimmer background flare */}
-                            <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 via-amber-200 to-orange-500 rounded-2xl blur-lg opacity-30 animate-pulse"></div>
+                    <div className="max-w-md w-full bg-slate-800 border-4 border-yellow-500 rounded-2xl shadow-2xl p-6 text-center transform scale-100 transition-all relative overflow-hidden">
+                        {/* Shimmer background flare */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500 via-amber-200 to-orange-500 rounded-2xl blur-lg opacity-30 animate-pulse"></div>
+                        
+                        <div className="relative z-10 space-y-4">
+                            <span className="text-6xl animate-bounce block">{state.celebration.icon || '🏆'}</span>
+                            <h2 className="text-2xl font-black tracking-wider text-yellow-400 uppercase drop-shadow-md">
+                                {state.celebration.title}
+                            </h2>
+                            <p className="text-sm font-semibold text-slate-100 tracking-wide">
+                                {state.celebration.subtitle}
+                            </p>
                             
-                            <div className="relative z-10 space-y-4">
-                                <span className="text-6xl animate-bounce block">{state.celebration.icon || '🏆'}</span>
-                                <h2 className="text-2xl font-black tracking-wider text-yellow-400 uppercase drop-shadow-md">
-                                    {state.celebration.title}
-                                </h2>
-                                <p className="text-sm font-semibold text-slate-100 tracking-wide">
-                                    {state.celebration.subtitle}
-                                </p>
-                                
-                                <div className="pt-4">
-                                    <button
-                                        onClick={dismissCelebration}
-                                        className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 active:scale-95 text-slate-950 font-black uppercase tracking-widest text-[11px] py-2.5 px-6 rounded-full shadow-lg transition-all"
-                                    >
-                                        Awesome! 🌟
-                                    </button>
-                                </div>
+                            <div className="pt-4">
+                                <button
+                                    onClick={() => {
+                                        dismissCelebration();
+                                    }}
+                                    className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 active:scale-95 text-slate-950 font-black uppercase tracking-widest text-[11px] py-2.5 px-6 rounded-full shadow-lg transition-all"
+                                >
+                                    Awesome! 🌟
+                                </button>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             )}
 

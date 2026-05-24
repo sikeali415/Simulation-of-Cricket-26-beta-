@@ -19,7 +19,7 @@ export type AppState = 'MAIN_MENU' | 'TEAM_SELECTION' | 'AUCTION' | 'CAREER_HUB'
 export type CareerScreen = 'DASHBOARD' | 'LEAGUES' | 'LINEUPS' | 'EDITOR' | 'NEWS' | 'STATS' | 'SETTINGS' | 'PLAYER_PROFILE' | 'MATCH_RESULT' | 'FORWARD_RESULTS' | 'AWARDS_RECORDS' | 'TRANSFERS' | 'END_OF_FORMAT' | 'COMPARISON' | 'SCHEDULE' | 'LIVE_MATCH' | 'SPONSOR_ROOM' | 'CUSTOMIZATION' | 'SELECT_PLAYER_FOR_COMPARISON_SLOT_1' | 'SELECT_PLAYER_FOR_COMPARISON_SLOT_2' | 'AUCTION_ROOM' | 'RETENTION' | 'PLAYER_DATABASE';
 
 export interface PlayerStats {
-    matches: number; inningsBatting: number; inningsBowling: number; runs: number; highestScore: number; average: number; strikeRate: number; ballsFaced: number; dismissals: number;
+    matches: number; runs: number; highestScore: number; average: number; strikeRate: number; ballsFaced: number; dismissals: number;
     hundreds: number; fifties: number; thirties: number; fours: number; sixes: number; fastestFifty: number; fastestHundred: number;
     wickets: number; economy: number; bestBowling: string; bestBowlingWickets: number; bestBowlingRuns: number; bowlingAverage: number;
     ballsBowled: number; runsConceded: number; threeWicketHauls: number; fiveWicketHauls: number; catches: number; runOuts: number;
@@ -130,8 +130,6 @@ export interface Award {
     season: number; format: Format; winnerTeamId: string; winnerTeamName: string;
     bestBatter: { playerId: string, playerName: string, teamName: string, runs: number };
     bestBowler: { playerId: string, playerName: string, teamName: string, wickets: number };
-    mvp?: { playerId: string, playerName: string, teamName: string, points: number };
-    powerHitter?: { playerId: string, playerName: string, teamName: string, strikeRate: number };
 }
 
 export interface ScoreLimits { maxRuns?: number; maxWickets?: number; }
@@ -165,7 +163,7 @@ export interface LiveMatchState {
     ballByBallId?: string;
     recentBalls: string[];
     commentary: string[]; battingTeam: Team; bowlingTeam: Team; requiredRunRate: number; currentPartnership: { runs: number, balls: number }; fallOfWickets: { score: number, wicket: number, over: string, player: string }[]; waitingFor: 'openers' | 'batter' | 'bowler' | 'batter_arrival' | 'bowler_change' | null; strategies: { batting: Strategy; bowling: Strategy; }; autoPlayType: 'regular' | 'inning' | 'match' | null; tossWinnerId: string | null; tossDecision: 'bat' | 'bowl' | null;
-    celebration?: { title: string; subtitle: string; icon: string; player?: any };
+    celebration?: { title: string; subtitle: string; icon: string };
 }
 
 export interface Message { id: string; text: string; sender: 'user' | 'model' | 'bot'; timestamp?: Date; }
