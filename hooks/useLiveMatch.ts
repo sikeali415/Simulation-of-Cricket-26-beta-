@@ -74,8 +74,8 @@ export const useLiveMatch = (
 
         if (matchIdRef.current === match.matchNumber) return;
 
-        const teamAData = gameData.teams.find(t => t.name === match.teamA) || gameData.teams.find(t => t.id === match.teamAId) || gameData.teams.find(t => t.id === match.teamA) || gameData.teams[0];
-        const teamBData = gameData.teams.find(t => t.name === match.teamB) || gameData.teams.find(t => t.id === match.teamBId) || gameData.teams.find(t => t.id === match.teamB) || gameData.teams[1];
+        const teamAData = gameData.teams.find(t => t.name === match.teamA);
+        const teamBData = gameData.teams.find(t => t.name === match.teamB);
         
         if (!teamAData || !teamBData) {
             console.error("Teams not found for live match:", match.teamA, match.teamB);

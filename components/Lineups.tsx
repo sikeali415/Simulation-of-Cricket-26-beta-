@@ -150,15 +150,6 @@ const Lineups: React.FC<LineupsProps> = ({ gameData, userTeam, handleUpdatePlayi
 
     const isDomesticOnlyFormat = [Format.ODI, Format.SHIELD].includes(selectedFormat);
 
-    const memoizedSquadIdsKey = useMemo(() => {
-        return JSON.stringify(selectedTeam?.squad.map(p => p.id) || []);
-    }, [selectedTeam?.squad]);
-
-    const memoizedXiIdsKey = useMemo(() => {
-        if (!selectedTeam) return '';
-        return JSON.stringify(gameData.playingXIs[selectedTeam.id]?.[selectedFormat] || []);
-    }, [gameData.playingXIs, selectedTeam, selectedFormat]);
-
     useEffect(() => {
         if (!selectedTeam) return;
         const teamData = gameData.teams.find(t => t.id === selectedTeam.id);
@@ -183,7 +174,7 @@ const Lineups: React.FC<LineupsProps> = ({ gameData, userTeam, handleUpdatePlayi
         setPlayingXI(xiPlayers);
         const xiIdSet = new Set(xiPlayers.map(p => p.id));
         setBench(teamData.squad.filter(p => !xiIdSet.has(p.id)));
-    }, [selectedTeamId, selectedFormat, memoizedSquadIdsKey, memoizedXiIdsKey, handleUpdatePlayingXI]);
+    }, [selectedTeam, selectedFormat, gameData, handleUpdatePlayingXI]);
 
     useEffect(() => {
         setPlayerToSwap(null);

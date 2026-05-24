@@ -230,7 +230,6 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
     val standings: StateFlow<List<LeagueStanding>> = _standings.asStateFlow()
 
     init {
-        registerInjectedPlayers()
         // Distribute starting roster players to their specified teamIds
         masterPlayersList.forEach { p ->
             if (p.teamId != null) {
@@ -241,219 +240,6 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
         recalculateBudgets()
         generateLeagueSchedule()
         recalculateStandings()
-    }
-
-    private fun addInjectedPlayer(
-        id: String,
-        name: String,
-        bat: Int,
-        bowl: Int,
-        roleStr: String,
-        aggStr: String,
-        bowlType: String = "",
-        extraFlags: String = "",
-        nationality: String = "Pakistan",
-        weaknessStr: String = "",
-        assignedTeamId: String? = null
-    ) {
-        val role = when (roleStr) {
-            "AR" -> PlayerRole.ALL_ROUNDER
-            "WK" -> PlayerRole.WICKET_KEEPER
-            "BL", "SB" -> PlayerRole.BOWLER
-            else -> PlayerRole.BATSMAN
-        }
-        val playStyle = when (aggStr) {
-            "A" -> PlayingStyle.AGGRESSIVE
-            "D" -> PlayingStyle.DEFENSIVE
-            "NA" -> PlayingStyle.BLITZKRIEG
-            else -> PlayingStyle.BALANCED
-        }
-        
-        val bType = bowlType.trim().lowercase()
-        val deliveryStyle = when (bType) {
-            "ls", "os", "lals", "laos", "lac" -> DeliveryStyle.SPIN
-            "fb", "fbs" -> DeliveryStyle.FAST
-            else -> DeliveryStyle.MEDIUM
-        }
-
-        val flags = extraFlags.lowercase()
-        val isOpener = flags.contains("op")
-        val isTopOrder = flags.contains("top") || flags.contains("4")
-        val isFinisher = flags.contains("finisher")
-        val isPowerHitter = flags.contains("power")
-
-        // Clean up duplicates
-        masterPlayersList.removeAll { it.name.trim().lowercase() == name.trim().lowercase() }
-
-        val p = Player(
-            id = id,
-            name = name,
-            role = role,
-            battingSkill = bat,
-            bowlingSkill = bowl,
-            playStyle = playStyle,
-            deliveryStyle = deliveryStyle,
-            nationality = nationality,
-            county = "Karachi",
-            isForeign = (nationality != "Pakistan"),
-            marketPriceCr = 1.0 + (bat + bowl) / 50.0,
-            teamId = assignedTeamId,
-            bowlingType = if (bType.isNotEmpty()) bType else "m",
-            weakness = weaknessStr,
-            isOpener = isOpener,
-            isTopOrder = isTopOrder,
-            isFinisher = isFinisher,
-            isPowerHitter = isPowerHitter
-        )
-        masterPlayersList.add(p)
-    }
-
-    private fun registerInjectedPlayers() {
-        // - International (Australia)
-        addInjectedPlayer("inj_au1", "A. Haddin", 65, 56, "AR", "A", "m", "Finisher", "Australia", "ls,fbs")
-        addInjectedPlayer("inj_au2", "Langer", 22, 72, "BL", "D", "fbs", "", "Australia")
-        addInjectedPlayer("inj_au3", "Parsh", 76, 0, "WK", "N", "", "OP", "Australia")
-        addInjectedPlayer("inj_au4", "Mausechate", 69, 23, "BT", "A", "", "Finisher", "Australia")
-        addInjectedPlayer("inj_au5", "Wade", 25, 84, "BL", "D", "fbs", "", "Australia")
-        addInjectedPlayer("inj_au6", "Lance", 76, 0, "BT", "N", "", "OP", "Australia")
-        addInjectedPlayer("inj_au7", "M.G. Glaxen", 82, 65, "AR", "A", "ls", "OP,Power Hitter", "Australia")
-        addInjectedPlayer("inj_au8", "J. Harris", 56, 45, "AR", "N", "m", "Finisher", "Australia")
-        addInjectedPlayer("inj_au9", "Lin", 34, 68, "BL", "N", "fb", "", "Australia")
-        addInjectedPlayer("inj_au10", "Wilton", 72, 64, "AR", "N", "mv", "", "Australia")
-
-        // - International (New Zealand)
-        addInjectedPlayer("inj_nz1", "Waller", 23, 67, "BL", "N", "mv", "", "New Zealand")
-        addInjectedPlayer("inj_nz2", "B. Rington", 45, 56, "AR", "N", "fb", "Finisher", "New Zealand")
-        addInjectedPlayer("inj_nz3", "Addams", 55, 45, "AR", "N", "fb", "Finisher", "New Zealand")
-        addInjectedPlayer("inj_nz4", "S. Warner", 76, 33, "BT", "A", "", "OP", "New Zealand")
-        addInjectedPlayer("inj_nz5", "Sprike", 80, 0, "WK", "A", "", "OP", "New Zealand")
-
-        // - International (West Indies)
-        addInjectedPlayer("inj_wi1", "Jordan", 23, 66, "BL", "N", "fb", "", "West Indies")
-        addInjectedPlayer("inj_wi2", "N. Fill", 22, 68, "SB", "N", "lac", "", "West Indies")
-        addInjectedPlayer("inj_wi3", "A. Chadwick", 73, 0, "WK", "A", "", "OP", "West Indies")
-
-        // - International (Sri Lanka)
-        addInjectedPlayer("inj_sl1", "Sriwardna", 67, 0, "BT", "D", "", "", "Sri Lanka")
-        addInjectedPlayer("inj_sl2", "C. Dhanushka", 45, 66, "AR", "D", "ls", "", "Sri Lanka")
-
-        // - International (South Africa)
-        addInjectedPlayer("inj_sa1", "James", 63, 66, "AR", "A", "lals", "", "South Africa")
-        addInjectedPlayer("inj_sa2", "Aram", 45, 66, "AR", "D", "os", "", "South Africa")
-
-        // - International (England)
-        addInjectedPlayer("inj_eng1", "N. Colin", 70, 61, "AR", "N", "laos", "", "England")
-        addInjectedPlayer("inj_eng2", "D. Quentin", 56, 23, "BT", "N", "", "", "England")
-
-        // - Spin Bowlers (SB)
-        addInjectedPlayer("sb1", "Rahat", 12, 59, "SB", "N", "ls")
-        addInjectedPlayer("sb2", "Abrar", 22, 62, "SB", "D", "os")
-        addInjectedPlayer("sb3", "Anwar", 28, 81, "SB", "N", "ls")
-        addInjectedPlayer("sb4", "Arshad", 22, 56, "SB", "D", "ls")
-        addInjectedPlayer("sb5", "Mehrab", 16, 62, "SB", "D", "lals")
-        addInjectedPlayer("sb6", "Bilal", 40, 78, "SB", "N", "os")
-        addInjectedPlayer("sb7", "Adnan", 12, 56, "SB", "D", "laos")
-        addInjectedPlayer("sb8", "Riaz", 11, 55, "SB", "N", "lac")
-        addInjectedPlayer("sb9", "Amjad", 30, 69, "SB", "D", "os")
-        addInjectedPlayer("sb10", "Rehan", 12, 61, "SB", "N", "ls")
-        addInjectedPlayer("sb11", "N. Samad", 23, 55, "SB", "D", "lac")
-        addInjectedPlayer("sb12", "M. Amjad", 45, 68, "SB", "N", "ls")
-        addInjectedPlayer("sb13", "Asim", 23, 71, "SB", "D", "os")
-
-        // - All-Rounders (AR)
-        addInjectedPlayer("ar1", "Khalid", 54, 45, "AR", "N", "lals")
-        addInjectedPlayer("ar2", "Taimoor", 56, 51, "AR", "N", "os")
-        addInjectedPlayer("ar3", "Saeed", 60, 58, "AR", "N", "os")
-        addInjectedPlayer("ar4", "Najaf", 41, 63, "AR", "D", "ls")
-        addInjectedPlayer("ar5", "Jahangir", 60, 58, "AR", "D", "os", "Finisher")
-        addInjectedPlayer("ar6", "M. Asghar", 56, 55, "AR", "N", "m", "Finisher")
-        addInjectedPlayer("ar7", "Amir", 81, 85, "AR", "NA", "ls")
-        addInjectedPlayer("ar8", "Mansoor", 55, 65, "AR", "N", "ls")
-        addInjectedPlayer("ar9", "Aftab", 70, 61, "AR", "NA", "os", "OP")
-        addInjectedPlayer("ar10", "Wahab", 50, 51, "AR", "N", "os")
-        addInjectedPlayer("ar11", "Aaqib Raza", 78, 70, "AR", "A", "fb")
-        addInjectedPlayer("ar12", "Sike", 87, 85, "AR", "NA", "fbs", "OP")
-        addInjectedPlayer("ar13", "Nawaz", 57, 67, "AR", "A", "mv")
-        addInjectedPlayer("ar14", "Muhammad Tahir", 60, 56, "AR", "A", "m")
-        addInjectedPlayer("ar15", "Irfaan Ali", 70, 56, "AR", "N", "os")
-
-        // - Wicket Keepers (WK)
-        addInjectedPlayer("wk1", "M. Imran", 68, 60, "WK", "A")
-        addInjectedPlayer("wk2", "S. Khan", 75, 87, "WK", "D", "", "OP")
-        addInjectedPlayer("wk3", "Ali", 60, 67, "WK", "D")
-        addInjectedPlayer("wk4", "A. Sajjad", 55, 69, "WK", "N")
-        addInjectedPlayer("wk5", "Zulqarnain", 70, 78, "WK", "N", "", "OP")
-        addInjectedPlayer("wk6", "Haseebullah", 72, 78, "WK", "NA", "", "OP")
-        addInjectedPlayer("wk7", "Shahid Latif", 59, 67, "WK", "N")
-        addInjectedPlayer("wk8", "Yaqoob", 63, 68, "WK", "D")
-        addInjectedPlayer("wk9", "I. Javed", 84, 85, "WK", "NA", "", "OP")
-        addInjectedPlayer("wk10", "M. Amin", 79, 80, "WK", "NA", "", "OP")
-        addInjectedPlayer("wk11", "Aslam Sattar", 55, 60, "WK", "D")
-        addInjectedPlayer("wk12", "Atiq Ali", 62, 72, "WK", "N", "", "OP")
-        addInjectedPlayer("wk13", "Zahid", 77, 76, "WK", "N", "", "OP")
-        addInjectedPlayer("wk14", "Uddin Ali", 55, 65, "WK", "N", "", "OP")
-        addInjectedPlayer("wk15", "R. Saad", 60, 70, "WK", "N")
-
-        // - Fast Bowlers (BL)
-        addInjectedPlayer("bl1", "Ilyas", 11, 63, "BL", "D", "fb")
-        addInjectedPlayer("bl2", "Waheed", 10, 55, "BL", "D", "mv")
-        addInjectedPlayer("bl3", "M. Ali", 23, 67, "BL", "D", "mv")
-        addInjectedPlayer("bl4", "Sohail", 24, 75, "BL", "D", "fbs")
-        addInjectedPlayer("bl5", "Zia", 23, 72, "BL", "N", "fb")
-        addInjectedPlayer("bl6", "Azam", 23, 70, "BL", "D", "fb")
-        addInjectedPlayer("bl7", "Faraz Khan", 12, 56, "BL", "N", "mv")
-        addInjectedPlayer("bl8", "Waleed", 23, 55, "BL", "D", "m")
-        addInjectedPlayer("bl9", "Atif Maqbool", 12, 53, "BL", "N", "m")
-        addInjectedPlayer("bl10", "Rizwan", 22, 70, "BL", "N", "fb")
-        addInjectedPlayer("bl11", "Salman", 30, 73, "BL", "D", "fb")
-        addInjectedPlayer("bl12", "Naseem", 22, 81, "BL", "D", "fb")
-        addInjectedPlayer("bl13", "Aramzad", 25, 85, "BL", "N", "fbs")
-        addInjectedPlayer("bl14", "M. Arif", 12, 55, "BL", "D", "m")
-        addInjectedPlayer("bl15", "Waheed Ahmed", 16, 59, "BL", "D", "m")
-        addInjectedPlayer("bl16", "Naeem", 22, 75, "BL", "N", "mv")
-        addInjectedPlayer("bl17", "Akhlaq", 22, 69, "BL", "N", "fb")
-        addInjectedPlayer("bl18", "Ahsan", 22, 78, "BL", "N", "fbs")
-        addInjectedPlayer("bl19", "Farhan", 24, 80, "BL", "N", "fbs")
-        addInjectedPlayer("bl20", "N. Javed", 22, 49, "BL", "D", "m")
-        addInjectedPlayer("bl21", "Sohail Ahmed", 23, 46, "BL", "D", "m")
-        addInjectedPlayer("bl22", "Muzafar", 22, 71, "BL", "N", "fb")
-        addInjectedPlayer("bl23", "Sameen", 22, 72, "BL", "N", "fb")
-        addInjectedPlayer("bl24", "Zohaib", 36, 85, "BL", "N", "fbs")
-        addInjectedPlayer("bl25", "Iqrar", 19, 90, "BL", "D", "fbs", "Master")
-
-        // - Batsmen (BT)
-        addInjectedPlayer("bt1", "Jahid", 61, 22, "BT", "A", "", "Finisher")
-        addInjectedPlayer("bt2", "Shahid", 68, 45, "BT", "N", "os")
-        addInjectedPlayer("bt3", "Altaf", 55, 10, "BT", "N", "", "OP")
-        addInjectedPlayer("bt4", "Yasir", 67, 12, "BT", "N")
-        addInjectedPlayer("bt5", "Nauman", 72, 12, "BT", "N", "", "OP")
-        addInjectedPlayer("bt6", "Nasir", 81, 48, "BT", "NA", "", "OP")
-        addInjectedPlayer("bt7", "Haider", 62, 25, "BT", "N", "", "OP,Top Order")
-        addInjectedPlayer("bt8", "Asad", 60, 11, "BT", "N", "", "OP")
-        addInjectedPlayer("bt9", "Siraj", 63, 22, "BT", "D", "", "OP")
-        addInjectedPlayer("bt10", "Aziz", 53, 22, "BT", "A")
-        addInjectedPlayer("bt11", "Aslam", 71, 12, "BT", "D")
-        addInjectedPlayer("bt12", "Abid", 79, 45, "BT", "NA", "", "OP,Top Order")
-        addInjectedPlayer("bt13", "Husnain", 72, 22, "BT", "A", "", "Finisher")
-        addInjectedPlayer("bt14", "Qasim", 45, 12, "BT", "N")
-        addInjectedPlayer("bt15", "K. Navid", 72, 45, "BT", "N")
-        addInjectedPlayer("bt16", "Shoaib Khan", 56, 25, "BT", "D", "", "Finisher")
-        addInjectedPlayer("bt17", "A. Usman", 53, 22, "BT", "N", "", "OP")
-        addInjectedPlayer("bt18", "Aafaq", 50, 10, "BT", "D")
-        addInjectedPlayer("bt19", "Fakhrudin", 70, 23, "BT", "D")
-        addInjectedPlayer("bt20", "A. Hafeez", 68, 11, "BT", "N", "", "OP")
-        addInjectedPlayer("bt21", "Hamid Hasan", 70, 10, "BT", "A", "", "Finisher")
-        addInjectedPlayer("bt22", "S. Hasan", 65, 10, "BT", "D")
-        addInjectedPlayer("bt23", "Zakir", 59, 11, "BT", "D", "", "Finisher")
-        addInjectedPlayer("bt24", "Sadiq", 46, 10, "BT", "D")
-        addInjectedPlayer("bt25", "A. Jamal", 59, 0, "BT", "A", "", "Finisher")
-        addInjectedPlayer("bt26", "Ashfaq", 55, 10, "BT", "D")
-        addInjectedPlayer("bt27", "Farhan", 78, 10, "BT", "N", "", "OP")
-        addInjectedPlayer("bt28", "M. Musa", 72, 8, "BT", "A", "", "Top Order,Finisher")
-        addInjectedPlayer("bt29", "Abass", 72, 0, "BT", "A", "", "Finisher")
-        addInjectedPlayer("bt30", "Faisal Hasan", 83, 60, "BT", "NA", "", "OP,Top Order,Finisher")
-        addInjectedPlayer("bt31", "Muhammad Shahzain", 70, 34, "BT", "N", "", "Finisher")
-        addInjectedPlayer("bt32", "Azhar", 75, 45, "BT", "A")
     }
 
     private fun recalculateBudgets() {
@@ -847,30 +633,6 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
     private val _isUserBatting = MutableStateFlow(true)
     val isUserBatting = _isUserBatting.asStateFlow()
 
-    private val _isExploitWeaknessActive = MutableStateFlow(false)
-    val isExploitWeaknessActive = _isExploitWeaknessActive.asStateFlow()
-
-    fun setExploitWeaknessActive(active: Boolean) {
-        _isExploitWeaknessActive.value = active
-    }
-
-    private val _activeMilestoneText = MutableStateFlow<String?>(null)
-    val activeMilestoneText = _activeMilestoneText.asStateFlow()
-
-    private val _activeMilestoneSubtext = MutableStateFlow<String?>(null)
-    val activeMilestoneSubtext = _activeMilestoneSubtext.asStateFlow()
-
-    fun dismissMilestone() {
-        _activeMilestoneText.value = null
-        _activeMilestoneSubtext.value = null
-    }
-
-    private fun triggerMilestoneCelebration(title: String, subtitle: String) {
-        _activeMilestoneText.value = title
-        _activeMilestoneSubtext.value = subtitle
-        stopAutoSimulate()
-    }
-
     private val _firstInningsScore = MutableStateFlow<Int?>(null)
     val firstInningsScore = _firstInningsScore.asStateFlow()
 
@@ -1092,12 +854,8 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
             currentRuns = _runs.value,
             wicketsDown = _wickets.value,
             ballsBowled = _balls.value,
-            oversLimit = _oversLimit.value,
-            exploitWeakness = _isExploitWeaknessActive.value
+            oversLimit = _oversLimit.value
         )
-
-        // Reset the captaincy action flag back to false for the next ball
-        _isExploitWeaknessActive.value = false
 
         processBallOutcome(outcome, striker, bowler)
 
@@ -1116,9 +874,6 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
         val strikerStats = batStats[striker.name] ?: PlayerMatchStats(striker.name)
         val bowlerStats = bowlStats[bowler.name] ?: PlayerMatchStats(bowler.name)
 
-        val oldRuns = strikerStats.runsScored
-        val oldCareerRuns = striker.careerRuns
-
         if (!outcome.isExtra) {
             strikerStats.ballsFaced++
             strikerStats.runsScored += outcome.runs
@@ -1131,38 +886,9 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
             _runs.value += outcome.runs
             _balls.value++
             updateBallLog(outcome.runs.toString())
-
-            // Persistency updates
-            if (strikerStats.ballsFaced == 1) {
-                striker.careerInningsBatting++
-                striker.seasonMatches++
-                striker.careerMatches++
-            }
-            striker.seasonRuns += outcome.runs
-            striker.careerRuns += outcome.runs
-            striker.seasonBallsFaced++
-            if (strikerStats.runsScored > striker.highestScore) {
-                striker.highestScore = strikerStats.runsScored
-            }
-            if (striker.careerInningsBatting > 0) {
-                striker.battingAverage = striker.careerRuns.toDouble() / striker.careerInningsBatting
-            }
-            if (striker.seasonBallsFaced > 0) {
-                striker.battingStrikeRate = (striker.careerRuns.toDouble() * 100.0) / (striker.seasonBallsFaced + (striker.careerMatches * 15))
-            }
-
-            if (bowlerStats.ballsBowled == 1) {
-                bowler.careerInningsBowling++
-                bowler.careerMatches = (bowler.careerMatches + 1).coerceAtLeast(1)
-            }
-            bowler.seasonBallsBowled++
-            bowler.seasonRunsConceded += outcome.runs
         } else {
             _runs.value += outcome.totalRunsAwarded
             bowlerStats.runsConceded += outcome.totalRunsAwarded
-
-            // Persistency updates for bowler on extras
-            bowler.seasonRunsConceded += outcome.totalRunsAwarded
 
             if (outcome.extraType == "nb") {
                 strikerStats.ballsFaced++
@@ -1170,69 +896,8 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
                 if (outcome.runs == 4) strikerStats.fours++
                 if (outcome.runs == 6) strikerStats.sixes++
                 bowlerStats.ballsBowled++
-
-                // Persistency updates for front foot no ball batting increments
-                if (strikerStats.ballsFaced == 1) {
-                    striker.careerInningsBatting++
-                    striker.seasonMatches++
-                    striker.careerMatches++
-                }
-                striker.seasonRuns += outcome.runs
-                striker.careerRuns += outcome.runs
-                striker.seasonBallsFaced++
-                if (strikerStats.runsScored > striker.highestScore) {
-                    striker.highestScore = strikerStats.runsScored
-                }
-
-                if (bowlerStats.ballsBowled == 1) {
-                    bowler.careerInningsBowling++
-                }
-                bowler.seasonBallsBowled++
             }
             updateBallLog(outcome.extraType + (if (outcome.runs > 0) "+${outcome.runs}" else ""))
-        }
-
-        // Live Milestones Celebrations Check
-        val newRuns = strikerStats.runsScored
-        if (oldRuns < 50 && newRuns >= 50) {
-            striker.numFifties++
-            triggerMilestoneCelebration(
-                title = "FIFTY! 🌟",
-                subtitle = "${striker.name} reaches 50! (Innings: $newRuns runs)"
-            )
-        } else if (oldRuns < 100 && newRuns >= 100) {
-            striker.numCenturies++
-            triggerMilestoneCelebration(
-                title = "CENTURY! 🏏✨",
-                subtitle = "CENTURY! ${striker.name} scores a magnificent 100!"
-            )
-        }
-
-        // Form Streak Celebrations
-        if (oldRuns < 30 && newRuns >= 30) {
-            val hash = Math.abs(striker.name.hashCode()) % 5
-            if (hash == 0) {
-                triggerMilestoneCelebration(
-                    title = "HOT FORM! 🔥",
-                    subtitle = "${striker.name} records his 5th consecutive match with 30+ runs!"
-                )
-            } else if (hash == 1) {
-                triggerMilestoneCelebration(
-                    title = "HOT FORM! 🔥",
-                    subtitle = "${striker.name} records his 3rd fifty in recent games!"
-                )
-            }
-        }
-
-        // Career Milestones Check
-        val newCareerRuns = striker.careerRuns
-        listOf(1000, 2000, 5000).forEach { m ->
-            if (oldCareerRuns < m && newCareerRuns >= m) {
-                triggerMilestoneCelebration(
-                    title = "CAREER MILESTONE! 🎓🎒",
-                    subtitle = "CAREER MILESTONE! ${striker.name} completes $m career runs!"
-                )
-            }
         }
 
         if (outcome.isWicket) {
@@ -1240,35 +905,6 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
             strikerStats.isOut = true
             strikerStats.dismissalInfo = outcome.wicketType
             bowlerStats.wicketsTaken++
-
-            bowler.seasonWickets++
-            bowler.careerWickets++
-
-            // Hauls celebrations
-            if (bowlerStats.wicketsTaken == 3) {
-                bowler.numThreeWickets++
-                triggerMilestoneCelebration(
-                    title = "3-WICKET HAUL! 🍒",
-                    subtitle = "3-WICKET HAUL! ${bowler.name} takes 3 wickets in this match!"
-                )
-            } else if (bowlerStats.wicketsTaken == 5) {
-                bowler.numFiveWickets++
-                triggerMilestoneCelebration(
-                    title = "FIVE-FOR! 🎭🔥",
-                    subtitle = "FIVE-FOR! ${bowler.name} takes 5 wickets. Outstanding spell!"
-                )
-            }
-
-            // Career Wickets check
-            val oldWkts = bowler.careerWickets - 1
-            listOf(50, 100).forEach { w ->
-                if (oldWkts < w && bowler.careerWickets >= w) {
-                    triggerMilestoneCelebration(
-                        title = "CAREER WICKETS MILESTONE! 👑🦹",
-                        subtitle = "CAREER MILESTONE! ${bowler.name} completes $w career wickets."
-                    )
-                }
-            }
 
             updateBallLog("W")
             addCommentary("Ball ${_balls.value / 6}.${_balls.value % 6}: ${outcome.commentary}")

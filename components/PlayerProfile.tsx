@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Player, Format } from '../types';
 import { getRoleColor, getRoleFullName, aggregateStats, getPlayerBadges } from '../utils';
@@ -8,31 +9,8 @@ interface PlayerProfileProps {
     initialFormat: Format;
 }
 
-const getTacticalWeakness = (player: Player) => {
-    const hash = player.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const bowlingTypes = [
-        'Left-Arm Express Fast Bowlers',
-        'Off-Spin Deliveries on Dusty Spin Tracks',
-        'Slower Off-Cutter Swings',
-        'Surgical In-swinging Yorkers',
-        'Short-Pitch Bouncers on Quick Fast Tracks'
-    ];
-    return bowlingTypes[hash % bowlingTypes.length];
-};
-
-const getPlayerBio = (player: Player) => {
-    const hash = player.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const bios = [
-        `Known for exceptional hand-eye coordination and tactical awareness, ${player.name} is a versatile asset in any squad. Their ability to read the pitch state early allows them to adapt gameplay pacing seamlessly under volatile match situations.`,
-        `A natural leader and disciplined competitor, ${player.name} brings tremendous work ethic and tactical balance. Highly regarded by team scouts for delivering under high-pressure run chases and big match scenarios.`,
-        `Rising through the franchise developmental ranks, ${player.name} has solidified their position with consistent high-grade performances. Possesses classical technique coupled with highly explosive boundary-clearing dynamics.`,
-        `An elite tactician on the field, ${player.name}'s match preparation and mechanical consistency make them a reliable game changer. Scouts emphasize their high tactical cricket IQ and composure during death overs.`
-    ];
-    return bios[hash % bios.length];
-};
-
 const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFormat }) => {
-    const [selectedFormat, setSelectedFormat] = useState<Format | 'Summary' | 'About'>('About');
+    const [selectedFormat, setSelectedFormat] = useState<Format | 'Summary'>(initialFormat);
     
     const summaryStats = useMemo(() => {
         if (!player) return null;
@@ -51,13 +29,11 @@ const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFo
 
     if (!player || !summaryStats) return <div>Player not found. <button onClick={onBack}>Back</button></div>;
     
-    const stats = (selectedFormat === 'Summary' || selectedFormat === 'About') 
-        ? summaryStats.overall 
-        : player.stats[selectedFormat];
+    const stats = selectedFormat === 'Summary' ? summaryStats.overall : player.stats[selectedFormat];
     
     return (
         <div className="p-4 h-[calc(100vh-90px)] overflow-y-auto">
-            <button onClick={onBack} className="mb-2 text-sm text-teal-500 hover:text-teal-400 transition-colors">&larr; Back to Stats</button>
+            <button onClick={onBack} className="mb-2 text-sm text-teal-500">&larr; Back to Stats</button>
             <div className="text-center mb-4">
                 <h2 className="text-3xl font-bold">{player.name}</h2>
                 <p className={`${getRoleColor(player.role)} font-semibold`}>{getRoleFullName(player.role)}</p>
@@ -76,157 +52,71 @@ const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFo
             {/* Career Summary Table */}
             <div className="mb-6 overflow-x-auto">
                 <h3 className="font-bold text-lg mb-2 text-center">Career Summary</h3>
-                <table className="w-full text-xs text-center border-collapse">
+                <table className="w-full text-xs text-center">
                     <thead>
-                        <tr className="bg-gray-200 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300">
-                            <th className="p-1.5 text-left rounded-l-lg">Format</th>
-                            <th className="p-1.5">M</th>
-                            <th className="p-1.5">Runs</th>
-                            <th className="p-1.5">Avg</th>
-                            <th className="p-1.5">SR</th>
-                            <th className="p-1.5">Wkts</th>
-                            <th className="p-1.5">Avg</th>
-                            <th className="p-1.5 rounded-r-lg">Econ</th>
+                        <tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                            <th className="p-1 text-left">Format</th>
+                            <th className="p-1">M</th>
+                            <th className="p-1">Runs</th>
+                            <th className="p-1">Avg</th>
+                            <th className="p-1">SR</th>
+                            <th className="p-1">Wkts</th>
+                            <th className="p-1">Avg</th>
+                            <th className="p-1">Econ</th>
                         </tr>
                     </thead>
                     <tbody>
                          <tr className="border-b border-gray-100 dark:border-gray-700/50">
-                            <td className="p-1.5 text-left font-semibold text-gray-700 dark:text-gray-300">First Class</td>
-                            <td className="p-1.5">{summaryStats.fc.matches}</td>
-                            <td className="p-1.5 font-bold">{summaryStats.fc.runs}</td>
-                            <td className="p-1.5">{summaryStats.fc.average.toFixed(2)}</td>
-                            <td className="p-1.5">{summaryStats.fc.strikeRate.toFixed(1)}</td>
-                            <td className="p-1.5 font-bold">{summaryStats.fc.wickets}</td>
-                            <td className="p-1.5">{summaryStats.fc.bowlingAverage.toFixed(2)}</td>
-                            <td className="p-1.5">{summaryStats.fc.economy.toFixed(2)}</td>
+                            <td className="p-1 text-left font-semibold">First Class</td>
+                            <td className="p-1">{summaryStats.fc.matches}</td>
+                            <td className="p-1 font-bold">{summaryStats.fc.runs}</td>
+                            <td className="p-1">{summaryStats.fc.average.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.fc.strikeRate.toFixed(1)}</td>
+                            <td className="p-1 font-bold">{summaryStats.fc.wickets}</td>
+                            <td className="p-1">{summaryStats.fc.bowlingAverage.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.fc.economy.toFixed(2)}</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700/50">
-                            <td className="p-1.5 text-left font-semibold text-gray-700 dark:text-gray-300">List A</td>
-                            <td className="p-1.5">{summaryStats.listA.matches}</td>
-                            <td className="p-1.5 font-bold">{summaryStats.listA.runs}</td>
-                            <td className="p-1.5">{summaryStats.listA.average.toFixed(2)}</td>
-                            <td className="p-1.5">{summaryStats.listA.strikeRate.toFixed(1)}</td>
-                            <td className="p-1.5 font-bold">{summaryStats.listA.wickets}</td>
-                            <td className="p-1.5">{summaryStats.listA.bowlingAverage.toFixed(2)}</td>
-                            <td className="p-1.5">{summaryStats.listA.economy.toFixed(2)}</td>
+                            <td className="p-1 text-left font-semibold">List A</td>
+                            <td className="p-1">{summaryStats.listA.matches}</td>
+                            <td className="p-1 font-bold">{summaryStats.listA.runs}</td>
+                            <td className="p-1">{summaryStats.listA.average.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.listA.strikeRate.toFixed(1)}</td>
+                            <td className="p-1 font-bold">{summaryStats.listA.wickets}</td>
+                            <td className="p-1">{summaryStats.listA.bowlingAverage.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.listA.economy.toFixed(2)}</td>
                         </tr>
                          <tr className="border-b border-gray-100 dark:border-gray-700/50">
-                            <td className="p-1.5 text-left font-semibold text-gray-700 dark:text-gray-300">T20s</td>
-                            <td className="p-1.5">{summaryStats.t20.matches}</td>
-                            <td className="p-1.5 font-bold">{summaryStats.t20.runs}</td>
-                            <td className="p-1.5">{summaryStats.t20.average.toFixed(2)}</td>
-                            <td className="p-1.5">{summaryStats.t20.strikeRate.toFixed(1)}</td>
-                            <td className="p-1.5 font-bold">{summaryStats.t20.wickets}</td>
-                            <td className="p-1.5">{summaryStats.t20.bowlingAverage.toFixed(2)}</td>
-                            <td className="p-1.5">{summaryStats.t20.economy.toFixed(2)}</td>
+                            <td className="p-1 text-left font-semibold">T20s</td>
+                            <td className="p-1">{summaryStats.t20.matches}</td>
+                            <td className="p-1 font-bold">{summaryStats.t20.runs}</td>
+                            <td className="p-1">{summaryStats.t20.average.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.t20.strikeRate.toFixed(1)}</td>
+                            <td className="p-1 font-bold">{summaryStats.t20.wickets}</td>
+                            <td className="p-1">{summaryStats.t20.bowlingAverage.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.t20.economy.toFixed(2)}</td>
                         </tr>
-                        <tr className="bg-teal-50 dark:bg-teal-900/10 font-bold border-t border-teal-200 dark:border-teal-900/40">
-                            <td className="p-1.5 text-left text-teal-700 dark:text-teal-300 rounded-l-lg">Overall</td>
-                            <td className="p-1.5">{summaryStats.overall.matches}</td>
-                            <td className="p-1.5">{summaryStats.overall.runs}</td>
-                            <td className="p-1.5">{summaryStats.overall.average.toFixed(2)}</td>
-                            <td className="p-1.5">{summaryStats.overall.strikeRate.toFixed(1)}</td>
-                            <td className="p-1.5">{summaryStats.overall.wickets}</td>
-                            <td className="p-1.5">{summaryStats.overall.bowlingAverage.toFixed(2)}</td>
-                            <td className="p-1.5 rounded-r-lg">{summaryStats.overall.economy.toFixed(2)}</td>
+                        <tr className="bg-teal-50 dark:bg-teal-900/20 font-bold">
+                            <td className="p-1 text-left">Overall</td>
+                            <td className="p-1">{summaryStats.overall.matches}</td>
+                            <td className="p-1">{summaryStats.overall.runs}</td>
+                            <td className="p-1">{summaryStats.overall.average.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.overall.strikeRate.toFixed(1)}</td>
+                            <td className="p-1">{summaryStats.overall.wickets}</td>
+                            <td className="p-1">{summaryStats.overall.bowlingAverage.toFixed(2)}</td>
+                            <td className="p-1">{summaryStats.overall.economy.toFixed(2)}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            {/* Custom Tab selectors */}
-            <div className="flex justify-start items-center overflow-x-auto border-b border-gray-300 dark:border-gray-700/80 mb-4 pb-1 gap-1.5 scrollbar-none">
-                 {['About', 'Summary', ...Object.values(Format)].map(tab => (
-                    <button 
-                        key={tab} 
-                        onClick={() => setSelectedFormat(tab as any)} 
-                        className={`px-3.5 py-1.5 text-xs whitespace-nowrap font-semibold rounded-t-lg transition-all ${
-                            selectedFormat === tab 
-                                ? 'border-b-2 border-teal-500 text-teal-600 dark:text-teal-400 bg-teal-500/5' 
-                                : 'text-gray-500 hover:text-gray-850 dark:hover:text-white'
-                        }`}
-                    >
-                        {tab === 'Summary' ? 'Summary Statistics' : tab === 'About' ? 'Scouting & Bio' : tab}
-                    </button>
+            <div className="flex justify-center overflow-x-auto border-b border-gray-300 dark:border-gray-700 mb-2 pb-2">
+                 {Object.values(Format).map(format => (
+                    <button key={format} onClick={() => setSelectedFormat(format)} className={`px-3 py-1 text-xs whitespace-nowrap font-semibold ${selectedFormat === format ? 'border-b-2 border-teal-500 text-teal-500' : 'text-gray-500'}`}>{format}</button>
                 ))}
             </div>
             
-            {/* About Profile Section */}
-            {selectedFormat === 'About' && (
-                <div className="space-y-4 animate-fadeIn">
-                    {/* Bio paragraph */}
-                    <div className="bg-gray-150 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/40">
-                        <h3 className="font-bold text-xs uppercase tracking-wider text-teal-600 dark:text-teal-400 mb-2">Immersive Biography</h3>
-                        <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                            {getPlayerBio(player)}
-                        </p>
-                    </div>
-
-                    {/* Left/Right scouting blocks */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-gray-150 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/40">
-                            <h3 className="font-bold text-xs uppercase tracking-wider text-teal-600 dark:text-teal-400 mb-3">Athletic Dossier</h3>
-                            <div className="space-y-2 text-xs">
-                                <div className="flex justify-between border-b border-gray-200/40 dark:border-gray-700/40 pb-1.5">
-                                    <span className="text-gray-500">Nationality</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">{player.nationality}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-gray-200/40 dark:border-gray-700/40 pb-1.5">
-                                    <span className="text-gray-500">Affiliation</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">{player.isForeign ? '🌴 International Marquee' : '🏏 Domestic Class'}</span>
-                                </div>
-                                <div className="flex justify-between border-b border-gray-200/40 dark:border-gray-700/40 pb-1.5">
-                                    <span className="text-gray-500">Tempo Role</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">
-                                        {player.style === 'A' ? 'Aggressive Starter' : player.style === 'D' ? 'Defensive Anchor' : player.style === 'NA' ? 'Highly Aggressive (Blitzkrieg)' : 'Balanced Tempo'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between border-b border-gray-200/40 dark:border-gray-700/40 pb-1.5">
-                                    <span className="text-gray-500">Base Bid Price</span>
-                                    <span className="font-semibold text-amber-500">{player.basePrice ? `${player.basePrice.toFixed(2)} Crore` : 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between pb-1">
-                                    <span className="text-gray-500">Fitness Condition</span>
-                                    <span className={`font-semibold ${player.injury ? 'text-red-500' : 'text-emerald-500'}`}>
-                                        {player.injury ? `Injured (${player.injury.text})` : '100% Match Fit'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Tactical Scouting Card */}
-                        <div className="bg-gray-150 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/40">
-                            <h3 className="font-bold text-xs uppercase tracking-wider text-teal-600 dark:text-teal-400 mb-3">Scouting Briefing</h3>
-                            <div className="space-y-3 text-xs">
-                                <div>
-                                    <span className="text-gray-500 block mb-1">🎯 Core Tactical Strength:</span>
-                                    <p className="font-semibold text-gray-950 dark:text-gray-150 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg text-[11px] leading-relaxed">
-                                        {player.battingSkill > player.secondarySkill 
-                                            ? `Elite batting caliber: Rated at ${player.battingSkill}/100 with advanced boundary placement techniques and timing mechanics.` 
-                                            : `Specialist tactical bowler: Rated at ${player.secondarySkill}/100, skilled at delivering precision spells and inducing wickets.`}
-                                    </p>
-                                </div>
-                                <div>
-                                    <span className="text-gray-500 block mb-1">⚠️ Major Strategic Vulnerability:</span>
-                                    <p className="font-semibold text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2.5 py-1.5 rounded-lg text-[11px] leading-relaxed">
-                                        Vulnerable against {getTacticalWeakness(player)}. Telemetry advises limiting exposure in such formats.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Advisor notes */}
-                    <div className="bg-gradient-to-r from-teal-500/10 to-teal-900/10 border border-teal-500/20 p-4 rounded-xl">
-                        <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-widest block mb-1">📋 Coordinator Advisory Notes</span>
-                        <p className="text-xs italic text-gray-700 dark:text-gray-300 leading-relaxed font-mono">
-                            "Scouting telemetry reveals that {player.name} reacts exceptionally well under balanced tactical regimes. We recommend slotting them into comfortable orders to build momentum early."
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {selectedFormat !== 'About' && (
+            {selectedFormat !== 'Summary' && (
             <div className="bg-gray-100 dark:bg-gray-800/50 p-4 rounded-lg">
                 <h3 className="font-bold text-lg mb-2 text-center">{selectedFormat} Details</h3>
                 <div className="grid grid-cols-3 gap-2 text-center">
@@ -256,7 +146,7 @@ const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFo
                 </div>
 
                 {/* Phase Stats (T20 and One-Day) */}
-                {selectedFormat !== 'Summary' && (selectedFormat.includes('T20') || selectedFormat.includes('One-Day') || selectedFormat.includes('Cup')) && stats.phaseStats && (
+                {(selectedFormat.includes('T20') || selectedFormat.includes('One-Day') || selectedFormat.includes('Cup')) && stats.phaseStats && (
                     <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                         <h3 className="font-bold text-lg mb-3 text-center text-teal-600 dark:text-teal-400">Phase-wise Performance</h3>
                         
@@ -275,7 +165,7 @@ const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFo
                                             <th className="p-1.5 text-center">Avg</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-150 dark:divide-gray-800">
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                         {[
                                             { code: 'pp', name: 'Powerplay (PP)' },
                                             { code: 'mo', name: 'Middle Overs (MO)' },
@@ -358,7 +248,7 @@ const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFo
                                         <th className="p-1.5 text-center">30s / 50s / 100s</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-150 dark:divide-gray-800">
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                     {Object.entries(stats.positionStats)
                                         .map(([posStr, st]) => ({ pos: Number(posStr), ...(st as any) }))
                                         .filter(p => p.innings > 0)
@@ -382,7 +272,7 @@ const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFo
                                         })}
                                     {Object.values(stats.positionStats).filter((st: any) => st.innings > 0).length === 0 && (
                                         <tr>
-                                            <td colSpan={6} className="p-4 text-center text-gray-550 italic">No innings recorded at any position yet.</td>
+                                            <td colSpan={6} className="p-4 text-center text-gray-500 italic">No innings recorded at any position yet.</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -393,7 +283,7 @@ const PlayerProfile: React.FC<PlayerProfileProps> = ({ player, onBack, initialFo
             </div>
             )}
         </div>
-    );
-};
+    )
+}
 
 export default PlayerProfile;

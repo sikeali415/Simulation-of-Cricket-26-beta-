@@ -13,8 +13,7 @@ enum class PlayerRole {
 enum class PlayingStyle {
     AGGRESSIVE, // High risk, many boundaries
     DEFENSIVE,  // Low risk, many dot balls and singles
-    BALANCED,   // Balanced risk
-    BLITZKRIEG  // Highly Aggressive / Blitzkrieg
+    BALANCED    // Balanced risk
 }
 
 enum class DeliveryStyle {
@@ -48,73 +47,8 @@ data class Player(
     var seasonWickets: Int = 0,
     var seasonBallsFaced: Int = 0,
     var seasonBallsBowled: Int = 0,
-    var seasonRunsConceded: Int = 0,
-    var bowlingType: String = "m",
-    var weakness: String = "",
-    var isOpener: Boolean = false,
-    var isTopOrder: Boolean = false,
-    var isFinisher: Boolean = false,
-    var isPowerHitter: Boolean = false,
-    // Career Accumulators
-    var careerMatches: Int = 0,
-    var careerInningsBatting: Int = 0,
-    var careerInningsBowling: Int = 0,
-    var careerRuns: Int = 0,
-    var highestScore: Int = 0,
-    var battingAverage: Double = 0.0,
-    var battingStrikeRate: Double = 0.0,
-    var numFifties: Int = 0,
-    var numCenturies: Int = 0,
-    var careerWickets: Int = 0,
-    var bestBowlingFigures: String = "0/0",
-    var bowlingEconomy: Double = 0.0,
-    var numThreeWickets: Int = 0,
-    var numFiveWickets: Int = 0
-) {
-    init {
-        // Algorithmic Weakness Generation Rule:
-        // If weakness isn't explicitly defined and Batting Skill > 70,
-        // assign them an absolute vulnerability trait based on their lower skill subsets.
-        if (weakness.isEmpty() && battingSkill > 70) {
-            val hash = name.hashCode() + id.hashCode() + battingSkill
-            weakness = when (Math.abs(hash) % 4) {
-                0 -> "ls"    // Facing Leg Spin
-                1 -> "lals"  // Facing Left-Arm Spin
-                2 -> "fbs"   // Facing Fast Bowler with More Control
-                else -> "laos" // Facing Left Arm Off-Spin
-            }
-        }
-
-        // Initialize Sensible Default Starting Career Stats Based on Roles & Skills
-        if (careerMatches == 0) {
-            val hash = Math.abs(name.hashCode() + id.hashCode())
-            val baseM = 15 + (hash % 80) // 15 to 95 matches
-            careerMatches = baseM
-            
-            if (role == PlayerRole.BATSMAN || role == PlayerRole.ALL_ROUNDER || role == PlayerRole.WICKET_KEEPER) {
-                careerInningsBatting = (baseM * 0.9).toInt().coerceAtLeast(1)
-                val baseRunsPerInn = (battingSkill * 0.35) + (hash % 10)
-                careerRuns = (careerInningsBatting * baseRunsPerInn).toInt()
-                highestScore = (battingSkill * 1.1 + (hash % 40)).toInt().coerceIn(30, 185)
-                battingAverage = (careerRuns.toDouble() / careerInningsBatting).coerceIn(10.0, 62.0)
-                battingStrikeRate = 110.0 + (battingSkill * 0.6) + (hash % 15)
-                numFifties = (careerInningsBatting / 8).coerceAtLeast(0)
-                numCenturies = (careerInningsBatting / 40).coerceAtLeast(0)
-            }
-            if (role == PlayerRole.BOWLER || role == PlayerRole.ALL_ROUNDER) {
-                careerInningsBowling = (baseM * 0.85).toInt().coerceAtLeast(1)
-                val wktsPerInn = (bowlingSkill / 35.0) + ((hash % 50) / 100.0)
-                careerWickets = (careerInningsBowling * wktsPerInn).toInt().coerceAtLeast(1)
-                val bestW = (3 + (hash % 4)).coerceIn(2, 7)
-                val bestR = (10 + (hash % 35)).coerceIn(5, 50)
-                bestBowlingFigures = "$bestW/$bestR"
-                bowlingEconomy = (10.0 - (bowlingSkill * 0.04) + ((hash % 100) / 100.0)).coerceIn(4.5, 9.8)
-                numThreeWickets = (careerInningsBowling / 12).coerceAtLeast(0)
-                numFiveWickets = (careerInningsBowling / 45).coerceAtLeast(0)
-            }
-        }
-    }
-}
+    var seasonRunsConceded: Int = 0
+)
 
 data class Team(
     val id: String,
