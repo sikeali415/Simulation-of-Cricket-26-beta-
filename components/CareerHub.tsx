@@ -299,7 +299,7 @@ const CareerHub: React.FC<CareerHubProps> = ({ gameData, setGameData, onResetGam
         });
     };
 
-    const handleUpdateCaptain = (teamId: string, format: Format, playerId: string) => {
+    const handleUpdateCaptain = useCallback((teamId: string, format: Format, playerId: string) => {
         setGameData(prevData => {
             if (!prevData) return null;
             return {
@@ -313,9 +313,9 @@ const CareerHub: React.FC<CareerHubProps> = ({ gameData, setGameData, onResetGam
             };
         });
         showFeedback("Captain updated!");
-    };
+    }, [setGameData, showFeedback]);
 
-    const handleUpdatePlayingXI = (teamId: string, format: Format, newXI: string[]) => {
+    const handleUpdatePlayingXI = useCallback((teamId: string, format: Format, newXI: string[]) => {
         setGameData(prevData => {
             if (!prevData) return null;
             const teamXIs = prevData.playingXIs[teamId] || {};
@@ -330,7 +330,7 @@ const CareerHub: React.FC<CareerHubProps> = ({ gameData, setGameData, onResetGam
                 }
             };
         });
-    };
+    }, [setGameData]);
 
     const simulateBackgroundMatches = (currentData: GameData): GameData => {
         let updatedData = JSON.parse(JSON.stringify(currentData)) as GameData;
