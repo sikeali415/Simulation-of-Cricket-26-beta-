@@ -26,7 +26,8 @@ object SimulationEngine {
         currentRuns: Int,
         wicketsDown: Int,
         ballsBowled: Int,
-        oversLimit: Int
+        oversLimit: Int,
+        exploitWeakness: Boolean = false
     ): BallOutcome {
         // 1. Extras probability (Wide, No Ball)
         // Fast bowlers have slightly higher extra rate
@@ -66,9 +67,19 @@ object SimulationEngine {
         }
 
         // 2. Wicket vs Run scenario
+        // Check if active bowler's bowling type matches current batsman's weakness
+        val isWeaknessMatched = batsman.weakness.split(",").map { it.trim() }.contains(bowler.bowlingType)
+
+        // Scale up bowler skill by 1.25x if weakness matches primary bowling type
+        val activeBowlerSkill = if (isWeaknessMatched) {
+            (bowler.bowlingSkill * 1.25).coerceIn(1.0, 100.0)
+        } else {
+            bowler.bowlingSkill.toDouble()
+        }
+
         // Calculate basic batting advantage and bowling advantage
         val batAdvLevel = (batsman.battingSkill - 50) / 100.0 // range -0.5 to 0.5
-        val bowlAdvLevel = (bowler.bowlingSkill - 50) / 100.0 // range -0.5 to 0.5
+        val bowlAdvLevel = (activeBowlerSkill - 50) / 100.0 // range -0.5 to 0.5
 
         // Pitch multipliers
         var pitchBatMult = 1.0
@@ -113,8 +124,11 @@ object SimulationEngine {
         // Base probabilities of a wicket
         // Average wicket probability per normal ball is around 4.5% - 5.5% in cricket
         val baseWicketChance = 0.048
-        val adjustedWktChance = baseWicketChance * (1 + bowlAdvLevel - batAdvLevel) * pitchWktMult * styleWktMult
-        val finalWktChance = adjustedWktChance.coerceIn(0.012, 0.18)
+        var adjustedWktChance = baseWicketChance * (1 + bowlAdvLevel - batAdvLevel) * pitchWktMult * styleWktMult
+        if (exploitWeakness && isWeaknessMatched) {
+            adjustedWktChance *= 1.10
+        }
+        val finalWktChance = adjustedWktChance.coerceIn(0.012, 0.25)
 
         if (random.nextDouble() < finalWktChance) {
             // It's a wicket!
@@ -180,7 +194,13 @@ object SimulationEngine {
         val runOptions = listOf(0, 1, 2, 3, 4, 6)
         
         // Base weights adjusted by skill and pitch and styles
-        val userSkillRatio = (1.0 + batAdvLevel - bowlAdvLevel) * pitchBatMult * styleBatMult
+        var userSkillRatio = (1.0 + batAdvLevel - bowlAdvLevel) * pitchBatMult * styleBatMult
+        if (isWeaknessMatched) {
+            userSkillRatio *= 0.75 // sweet spot contracts dynamically
+        }
+        if (exploitWeakness && isWeaknessMatched) {
+            userSkillRatio *= 1.05 // risk of conceding 5% more runs if wicket execution fails
+        }
 
         val dotWeight = (0.50 / (userSkillRatio.coerceAtLeast(0.3))).coerceIn(0.2, 0.8)
         val singleWeight = 0.32

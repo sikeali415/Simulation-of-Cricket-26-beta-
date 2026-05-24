@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
 fun CricketManagerAppLayout(modifier: Modifier = Modifier) {
     val viewModel: CricketViewModel = viewModel()
     var selectedTab by remember { mutableStateOf(0) }
+    var activeDetailPlayer by remember { mutableStateOf<Player?>(null) }
 
     val userTeam = viewModel.userTeam
     val userTeamColor = remember(userTeam.colorHex) {
@@ -205,11 +206,19 @@ fun CricketManagerAppLayout(modifier: Modifier = Modifier) {
         Box(modifier = Modifier.fillMaxSize()) {
             when (selectedTab) {
                 0 -> LeagueDashboardScreen(viewModel, userTeamColor) { selectedTab = 4 }
-                1 -> LineupsScreen(viewModel, userTeamColor)
-                2 -> TransfersScreen(viewModel, userTeamColor)
+                1 -> LineupsScreen(viewModel, userTeamColor, onPlayerClick = { activeDetailPlayer = it })
+                2 -> TransfersScreen(viewModel, userTeamColor, onPlayerClick = { activeDetailPlayer = it })
                 3 -> CustomizerScreen(viewModel, userTeamColor)
                 4 -> MatchCenterScreen(viewModel, userTeamColor)
             }
+        }
+
+        activeDetailPlayer?.let { player ->
+            PlayerProfileDialog(
+                player = player,
+                themeColor = userTeamColor,
+                onDismiss = { activeDetailPlayer = null }
+            )
         }
     }
 }
@@ -542,7 +551,7 @@ fun LeagueDashboardScreen(
 // TAB 1: SQUAD LINEUPS & LAWS VALIDATION
 // -------------------------------------------------------------
 @Composable
-fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
+fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color, onPlayerClick: (Player) -> Unit) {
     val userTeam = viewModel.userTeam
     var playingXIForeignCount = userTeam.players.take(11).count { it.isForeign }
 
@@ -626,6 +635,7 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable { onPlayerClick(p) }
                             .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -700,6 +710,7 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable { onPlayerClick(p) }
                                 .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -719,7 +730,7 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
 // TAB 2: TRANSFERS & COUNTY POOL
 // -------------------------------------------------------------
 @Composable
-fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
+fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color, onPlayerClick: (Player) -> Unit) {
     val players by viewModel.playersStateFlow.collectAsState()
     val userTeam = viewModel.userTeam
 
@@ -886,7 +897,9 @@ fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, if (isOwned) themeColor else MaterialTheme.colorScheme.outlineVariant),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onPlayerClick(p) }
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
@@ -1295,6 +1308,12 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
     val bStatsMap by viewModel.batsmanStatsMap.collectAsState()
     val boStatsMap by viewModel.bowlerStatsMap.collectAsState()
 
+    val milestoneText by viewModel.activeMilestoneText.collectAsState()
+    val milestoneSubtext by viewModel.activeMilestoneSubtext.collectAsState()
+    val isExploitWeaknessActive by viewModel.isExploitWeaknessActive.collectAsState()
+
+    var selectedSubTab by remember { mutableStateOf(0) } // 0: Play, 1: Gameplan
+
     // Dynamic team scorecard color mapping based on active batting team
     val battingTeamColor = remember(battingTeamNow.colorHex) {
         try {
@@ -1304,13 +1323,81 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
         }
     }
 
-    // Active Live Scoreboard
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        border = BorderStroke(2.dp, battingTeamColor),
-        modifier = Modifier.fillMaxWidth()
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        // --- MATCH MILESTONE CELEBRATIONS OVERLAY ---
+        if (milestoneText != null) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                border = BorderStroke(4.dp, Color(0xFFFFD700)),
+                modifier = Modifier.fillMaxWidth().animateContentSize().testTag("milestone_overlay_card")
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "🎉 MATCH MILESTONE REVEAL 🎉",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color(0xFFFF9100)
+                    )
+                    Text(
+                        text = milestoneText ?: "",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = milestoneSubtext ?: "",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
+                        textAlign = TextAlign.Center
+                    )
+                    Button(
+                        onClick = { viewModel.dismissMilestone() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD700)),
+                        modifier = Modifier.fillMaxWidth().height(42.dp)
+                    ) {
+                        Text("Dismiss / Resume Match 🏟️", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+
+        // Sub Tab Selector
+        TabRow(
+            selectedTabIndex = selectedSubTab,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = battingTeamColor,
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+        ) {
+            Tab(
+                selected = selectedSubTab == 0,
+                onClick = { selectedSubTab = 0 },
+                text = { Text("🏏 Play Screen", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+            )
+            Tab(
+                selected = selectedSubTab == 1,
+                onClick = { selectedSubTab = 1 },
+                text = { Text("🛂 Gameplan", fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+            )
+        }
+
+        if (selectedSubTab == 0) {
+            // Active Live Scoreboard
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                border = BorderStroke(2.dp, battingTeamColor),
+                modifier = Modifier.fillMaxWidth()
+            ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -1667,6 +1754,20 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             }
         }
     }
+        } else {
+            // --- TAB 1: GAMEPLAN HUD ---
+            LiveGameplanHUD(
+                viewModel = viewModel,
+                battingTeamNow = battingTeamNow,
+                bowlingTeamNow = bowlingTeamNow,
+                isUserBatting = isUserBatting,
+                strikerName = strikerName,
+                currentBowlerName = currentBowlerName,
+                battingTeamColor = battingTeamColor,
+                isExploitWeaknessActive = isExploitWeaknessActive
+            )
+        }
+    }
 }
 
 @Composable
@@ -1821,4 +1922,489 @@ fun MatchSummaryPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             }
         }
     }
+}
+
+@Composable
+fun LiveGameplanHUD(
+    viewModel: CricketViewModel,
+    battingTeamNow: Team,
+    bowlingTeamNow: Team,
+    isUserBatting: Boolean,
+    strikerName: String,
+    currentBowlerName: String,
+    battingTeamColor: Color,
+    isExploitWeaknessActive: Boolean
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(battingTeamColor.copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🛂", fontSize = 18.sp)
+                }
+                Column {
+                    Text("LIVE GAMEPLAN TACTICAL HUD", fontSize = 14.sp, fontWeight = FontWeight.Black, color = battingTeamColor)
+                    Text("Interactive Match Strategy Room", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                }
+            }
+
+            HorizontalDivider()
+
+            val bTypeMap = mapOf(
+                "ls" to "Leg Spin", "os" to "Off Spin", "lals" to "Left Arm Leg Spin", "laos" to "Left Arm Off Spin",
+                "lac" to "Chinaman", "mv" to "Medium Variants", "fb" to "Fast Bowler", "fbs" to "Fast Controller", "m" to "Medium"
+            )
+
+            if (!isUserBatting) {
+                // User is Bowling -> Target Opponent Batsman Weaknesses
+                val activeBatsman = battingTeamNow.players.firstOrNull { it.name == strikerName }
+                val activeBowler = bowlingTeamNow.players.firstOrNull { it.name == currentBowlerName }
+
+                if (activeBatsman != null && activeBowler != null) {
+                    // Batter info
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("👤 Current Opponent Striker", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Column {
+                                    Text(activeBatsman.name, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    Text("Style: ${activeBatsman.playStyle.name} • BAT: ${activeBatsman.battingSkill}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color.Red.copy(alpha = 0.15f))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    val friendlyWeak = bTypeMap[activeBatsman.weakness] ?: activeBatsman.weakness.uppercase()
+                                    Text("WEAKNESS: $friendlyWeak", color = Color.Red, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                }
+                            }
+                        }
+                    }
+
+                    // Bowler info
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("🍒 Your Active Bowler Specialist", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = battingTeamColor.copy(alpha = 0.05f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Column {
+                                    Text(activeBowler.name, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    Text("Style: ${bTypeMap[activeBowler.bowlingType] ?: activeBowler.bowlingType} • BOWL: ${activeBowler.bowlingSkill}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+
+                    // Compatibility Check
+                    val bowlerMatchesWeakness = activeBowler.bowlingType == activeBatsman.weakness
+                    if (bowlerMatchesWeakness) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFE8F5E9))
+                                .border(1.dp, Color(0xFF2E7D32), RoundedCornerShape(8.dp))
+                                .padding(12.dp)
+                        ) {
+                            Text(
+                                text = "⚡ TACTICAL SCENARIO ADVANTAGE: ${activeBowler.name}'s classification aligns perfectly with striker weakness! Yields high wicket chances.",
+                                color = Color(0xFF1B5E20),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(12.dp)
+                        ) {
+                            val friendlyWeakname = bTypeMap[activeBatsman.weakness] ?: activeBatsman.weakness
+                            Text(
+                                text = "ℹ️ Captaincy Hint: Subbing in a ${friendlyWeakname} bowler would unlock severe tactical leverages against ${activeBatsman.name}.",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+
+                    // INTERACTIVE "EXPLOIT WEAKNESS" BUTTON
+                    Button(
+                        onClick = { viewModel.setExploitWeaknessActive(!isExploitWeaknessActive) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .testTag("exploit_weakness_button"),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isExploitWeaknessActive) Color(0xFFD32F2F) else battingTeamColor
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isExploitWeaknessActive) {
+                                "🔥 WEAKNESS EXPLOITER SPELL ACTIVE"
+                            } else {
+                                "🎯 EXPLOIT WEAKNESS FOCUS SPELL"
+                            },
+                            fontWeight = FontWeight.Black,
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+            } else {
+                // User is Batting
+                val activeOpponentBowler = bowlingTeamNow.players.firstOrNull { it.name == currentBowlerName }
+                val userBatsmanObj = battingTeamNow.players.firstOrNull { it.name == strikerName }
+
+                if (activeOpponentBowler != null) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("👤 Active Opponent Bowler Specialist", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(activeOpponentBowler.name, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Text("Type: ${bTypeMap[activeOpponentBowler.bowlingType] ?: activeOpponentBowler.bowlingType}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onErrorContainer)
+                                    Text("•", fontSize = 11.sp, color = MaterialTheme.colorScheme.onErrorContainer)
+                                    Text("Skill: ${activeOpponentBowler.bowlingSkill}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onErrorContainer)
+                                }
+                            }
+                        }
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("📋 Batting Tactics & Captaincy Guidance", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                val tipsText = when (activeOpponentBowler.deliveryStyle) {
+                                    DeliveryStyle.SPIN -> {
+                                        "🎯 SPIN TRAP DETECTED: Spinners thrive on extracting tight turns. Rotate batsman strikes often and prefer defense blocks on low bounces."
+                                    }
+                                    DeliveryStyle.FAST -> {
+                                        "⚡ SPEED THREAT: Rapid pace. Play late off the backfoot. Use aggressive stances selectively when bowlers are downwind."
+                                    }
+                                    else -> {
+                                        "🛡️ MEDIUM RESTRICTION: Highly accurate lengths. Best utilized by timing gaps cleanly or forcing risk-controlled ground shots."
+                                    }
+                                }
+                                Text(tipsText, fontSize = 12.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                                if (userBatsmanObj != null && userBatsmanObj.weakness == activeOpponentBowler.bowlingType) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(Color(0xFFFFEBEE))
+                                            .padding(8.dp)
+                                    ) {
+                                        Text(
+                                            "⚠️ CAUTION CAPTAIN: Selected Striker ${userBatsmanObj.name} has a known vulnerability facing ${bTypeMap[activeOpponentBowler.bowlingType] ?: activeOpponentBowler.bowlingType}! Focus heavily on defense or execute strike rotations immediately.",
+                                            color = Color(0xFFC62828),
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PlayerProfileDialog(player: Player, themeColor: Color, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = themeColor, fontWeight = FontWeight.Bold)
+            }
+        },
+        title = {
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(text = player.name, fontSize = 20.sp, fontWeight = FontWeight.Black)
+                    if (player.isForeign) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFFE53935))
+                                .padding(horizontal = 4.dp, vertical = 2.dp)
+                        ) {
+                            Text("OS", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+                Text(
+                    text = "${player.role.name.replace("_", " ")}  •  ${player.county}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Skills Header
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = themeColor.copy(alpha = 0.05f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("BAT SKILL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                            Text("${player.battingSkill}", fontSize = 18.sp, fontWeight = FontWeight.Black, color = themeColor)
+                            Text("Style: ${player.playStyle.name}", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Box(modifier = Modifier.width(1.dp).height(36.dp).background(MaterialTheme.colorScheme.outlineVariant))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("BOWL SKILL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                            Text("${player.bowlingSkill}", fontSize = 18.sp, fontWeight = FontWeight.Black, color = themeColor)
+                            val friendlyBType = when(player.bowlingType) {
+                                "ls" -> "Leg Spin"
+                                "os" -> "Off Spin"
+                                "lals" -> "LA Leg Spin"
+                                "laos" -> "LA Off Spin"
+                                "lac" -> "Chinaman"
+                                "mv" -> "Medium Var"
+                                "fb" -> "Fast Bowler"
+                                "fbs" -> "Fast Ctrl"
+                                else -> "Medium"
+                            }
+                            Text("Style: $friendlyBType", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+
+                // Career Statistics Boards
+                Text("📊 Career Records", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Batting stats row
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Innings", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("${player.careerInningsBatting}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Runs", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("${player.careerRuns}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Avg / SR", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("%.1f/%.1f".format(player.battingAverage, player.battingStrikeRate), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("HS", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("${player.highestScore}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("50s / 100s", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("${player.numFifties} / ${player.numCenturies}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Bowling stats Row
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Wkts", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("${player.careerWickets}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("BBI", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text(player.bestBowlingFigures, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Economy", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("%.2f".format(player.bowlingEconomy), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("3W / 5W Hauls", fontSize = 9.sp, color = MaterialTheme.colorScheme.outline)
+                                Text("${player.numThreeWickets} / ${player.numFiveWickets}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider()
+
+                // Scout Report about section
+                Text("📋 Scout Report", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = themeColor)
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "CORE EVALUATION",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = themeColor
+                        )
+                        val bTypeMap = mapOf(
+                            "ls" to "Leg Spin", "os" to "Off Spin", "lals" to "Left Arm Leg Spin", "laos" to "Left Arm Off Spin",
+                            "lac" to "Chinaman", "mv" to "Medium Variants", "fb" to "Fast Bowler", "fbs" to "Fast Controller", "m" to "Medium"
+                        )
+                        val desc = when (player.role) {
+                            PlayerRole.BATSMAN -> {
+                                if (player.isPowerHitter) {
+                                    "Devastating powerhouse. Outstanding hand-eye coordination with high boundary frequency but vulnerable to subtle spinner variations."
+                                } else if (player.isOpener || player.isTopOrder) {
+                                    "Technical anchor. Formidable defense and outstanding temperament, perfect for taking new ball fatigue workloads."
+                                } else {
+                                    "Middle order maestro. Dynamic gap-finder and aggressive runner in hot chases."
+                                }
+                            }
+                            PlayerRole.WICKET_KEEPER -> "A clean glove specialist showing extreme agility behind stumps. Highly reliable run accumulator."
+                            PlayerRole.BOWLER -> {
+                                if (player.deliveryStyle == DeliveryStyle.FAST) {
+                                    "Rapid pace operator with fearsome bounce and lethal yorker variations. Relies on raw speed."
+                                } else if (player.deliveryStyle == DeliveryStyle.SPIN) {
+                                    "Deceptive spin doctor who thrives on drying surfaces. Exploits steep angles."
+                                } else {
+                                    "Intelligent swing merchant who masters wrist-seam control first under storm environments."
+                                }
+                            }
+                            PlayerRole.ALL_ROUNDER -> "Dynamic match-winner providing supreme balance. Critical captaincy tool across both bowling and batting departments."
+                        }
+                        Text(
+                            text = desc,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "TACTICAL RECOMMENDATIONS",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = themeColor
+                        )
+                        val recDesc = when (player.role) {
+                            PlayerRole.BATSMAN, PlayerRole.WICKET_KEEPER -> {
+                                if (player.playStyle == PlayingStyle.AGGRESSIVE || player.playStyle == PlayingStyle.BLITZKRIEG) {
+                                    "Unleash in early powerplays or death overs. High-impact risk is highly offset by supreme strike rate potential."
+                                } else {
+                                    "Let them construct the baseline. Avoid early matches on green wickets."
+                                }
+                            }
+                            else -> {
+                                if (player.deliveryStyle == DeliveryStyle.SPIN) {
+                                    "Attack right after field spreads. Build pressure through dense close-in field setups."
+                                } else {
+                                    "Strike early with fresh bowler swing or spearhead death over wicket traps."
+                                }
+                            }
+                        }
+                        Text(
+                            text = recDesc,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "SCOUTED WEAKNESS",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = Color.Red
+                        )
+                        val weakText = if (player.weakness.isNotEmpty()) {
+                            "vulnerable against ${bTypeMap[player.weakness] ?: player.weakness.uppercase()} deliveries."
+                        } else {
+                            "shows no distinct tactical weakness based on telemetry reports."
+                        }
+                        Text(
+                            text = "The player is chemically $weakText Maintain strict lines to choke their options.",
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    )
 }
