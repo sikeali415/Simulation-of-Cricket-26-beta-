@@ -60,6 +60,9 @@ data class Player(
     val bestPosition: Int = 3,
     val isFinisher: Boolean = false,
     val isPowerHitter: Boolean = false,
+    val bio: String = "A disciplined athlete with high regional potential.",
+    val age: Int = 26,
+    val yearsProfessional: Int = 4,
     val bowlingSpeed: Int = 135, // Average speed in km/h
     val swingAbility: Int = 40,   // 1 to 100
     val turnAbility: Int = 30,    // 1 to 100

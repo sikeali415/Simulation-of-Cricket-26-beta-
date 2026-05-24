@@ -89,7 +89,7 @@ fun CricketManagerAppLayout(modifier: Modifier = Modifier) {
         val tvChannel by viewModel.selectedTVChannel.collectAsState()
         val tvColor = when (tvChannel) {
             "PrimeCast Ultra" -> Color(0xFFE91E63)
-            "Roar Sports Live" -> Color(0xFFD50000)
+            "Sike Sports+ 26" -> Color(0xFFFFD600)
             "CricketNow HD" -> Color(0xFF29B6F6)
             else -> Color(0xFF00E676)
         }
@@ -1005,7 +1005,7 @@ fun CustomizerScreen(viewModel: CricketViewModel, themeColor: Color) {
     val activeTVChannel by viewModel.selectedTVChannel.collectAsState()
 
     val sponsorOptions = listOf("Malik Sports", "Sike's Brands", "Signify Ltd", "G.S Bats")
-    val tvOptions = listOf("Roar Sports Live", "PrimeCast Ultra", "CricketNow HD", "Signify TV")
+    val tvOptions = listOf("Sike Sports+ 26", "PrimeCast Ultra", "CricketNow HD", "Signify TV")
 
     // Preset color bubbles
     val styleColors = listOf(
@@ -1107,6 +1107,27 @@ fun CustomizerScreen(viewModel: CricketViewModel, themeColor: Color) {
                 ) {
                     Text("Apply Branding Customization", fontWeight = FontWeight.Bold)
                 }
+            }
+        }
+
+        // PWA / OFFLINE INFO
+        Card(
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF9C4)), // Light Yellow
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFBC02D))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Chrome Offline App & PWA Info", fontSize = 14.sp, fontWeight = FontWeight.Black)
+                }
+                Text(
+                    text = "You can install Sike's Cricket Manager 26 as an offline app! In Chrome, tap the three dots (menu) and select 'Add to Home Screen' or 'Install App'. This allows the management engine to run entirely offline without data usage once cached.",
+                    fontSize = 11.sp,
+                    lineHeight = 16.sp,
+                    color = Color.Black.copy(alpha = 0.7f)
+                )
             }
         }
 
@@ -1269,6 +1290,9 @@ fun ScoutingSheetContent(
         HorizontalDivider()
 
         if (isBatter) {
+            ScoutingInfoRow("Nationality", player.nationality)
+            ScoutingInfoRow("Age", "${player.age} Years")
+            ScoutingInfoRow("Experience", "${player.yearsProfessional} Seasons Pro")
             ScoutingInfoRow("Weakness", player.weakness?.name?.replace("_", " ") ?: "None")
             ScoutingInfoRow("Strength", player.strengths)
             ScoutingInfoRow("Finisher Trait", if (player.isFinisher) "✅ YES" else "❌ NO")
@@ -1281,7 +1305,12 @@ fun ScoutingSheetContent(
             val currentStyle = if (player.name == strikerName) sStyle else nsStyle
             ScoutingInfoRow("Aggression", currentStyle.name)
 
+            HorizontalDivider()
+            Text("About Player", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = themeColor)
+            Text(player.bio, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
+            ScoutingInfoRow("Nationality", player.nationality)
+            ScoutingInfoRow("Age", "${player.age} Years")
             ScoutingInfoRow("Bowling Type", player.bowlingType.name.replace("_", " "))
             ScoutingInfoRow("Speed", "${player.bowlingSpeed} km/h")
             ScoutingInfoRow("Swing Ability", "${player.swingAbility}/100")
@@ -1397,11 +1426,19 @@ fun PlayerProfileDialog(player: Player, onDismiss: () -> Unit) {
                 }
 
                 // Attributes Grid
+                ProfileAttributeRow("Age", "${player.age} years")
+                ProfileAttributeRow("Nationality", player.nationality)
                 ProfileAttributeRow("Role", player.role.name.replace("_", " "))
+                ProfileAttributeRow("Exp", "${player.yearsProfessional} seasons")
                 ProfileAttributeRow("Team Id", player.teamId ?: "None")
                 ProfileAttributeRow("Batting", "${player.battingHand.name.replace("_", " ")} (${player.playingStyle})")
                 ProfileAttributeRow("Bowling", player.bowlingType.name.replace("_", " "))
                 ProfileAttributeRow("Best Pos", "No. ${player.bestPosition}")
+
+                HorizontalDivider()
+
+                Text("About Player", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text(player.bio, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                 HorizontalDivider()
 
@@ -1818,13 +1855,11 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             val sStats = bStatsMap[strikerName]
             Row(
                 modifier = Modifier.fillMaxWidth().clickable {
-                    if (!isUserBatting) {
-                        val p = battingTeamNow.players.firstOrNull { it.name == strikerName }
-                        if (p != null) {
-                            scoutingPlayer = p
-                            scoutingType = "BATTER"
-                            showSheet = true
-                        }
+                    val p = battingTeamNow.players.firstOrNull { it.name == strikerName }
+                    if (p != null) {
+                        scoutingPlayer = p
+                        scoutingType = "BATTER"
+                        showSheet = true
                     }
                 },
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1859,13 +1894,11 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             val nsStats = bStatsMap[nonStrikerName]
             Row(
                 modifier = Modifier.fillMaxWidth().clickable {
-                    if (!isUserBatting) {
-                        val p = battingTeamNow.players.firstOrNull { it.name == nonStrikerName }
-                        if (p != null) {
-                            scoutingPlayer = p
-                            scoutingType = "BATTER"
-                            showSheet = true
-                        }
+                    val p = battingTeamNow.players.firstOrNull { it.name == nonStrikerName }
+                    if (p != null) {
+                        scoutingPlayer = p
+                        scoutingType = "BATTER"
+                        showSheet = true
                     }
                 },
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1902,13 +1935,11 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             val bowStats = boStatsMap[currentBowlerName]
             Row(
                 modifier = Modifier.fillMaxWidth().clickable {
-                    if (isUserBatting) {
-                        val p = bowlingTeamNow.players.firstOrNull { it.name == currentBowlerName }
-                        if (p != null) {
-                            scoutingPlayer = p
-                            scoutingType = "BOWLER"
-                            showSheet = true
-                        }
+                    val p = bowlingTeamNow.players.firstOrNull { it.name == currentBowlerName }
+                    if (p != null) {
+                        scoutingPlayer = p
+                        scoutingType = "BOWLER"
+                        showSheet = true
                     }
                 },
                 horizontalArrangement = Arrangement.SpaceBetween,
