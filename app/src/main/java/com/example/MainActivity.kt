@@ -545,14 +545,6 @@ fun LeagueDashboardScreen(
 fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
     val userTeam = viewModel.userTeam
     var playingXIForeignCount = userTeam.players.take(11).count { it.isForeign }
-    
-    var selectedPlayerForProfile by remember { mutableStateOf<Player?>(null) }
-    
-    if (selectedPlayerForProfile != null) {
-        PlayerProfileDialog(player = selectedPlayerForProfile!!) {
-            selectedPlayerForProfile = null
-        }
-    }
 
     val squadValidation = viewModel.validateSquadRoster(userTeam.players)
     val lineupValidation = viewModel.validatePlayingXILineup(userTeam.players.take(11))
@@ -634,7 +626,6 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { selectedPlayerForProfile = p }
                             .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -709,7 +700,6 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { selectedPlayerForProfile = p }
                                 .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -732,14 +722,6 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
 fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
     val players by viewModel.playersStateFlow.collectAsState()
     val userTeam = viewModel.userTeam
-
-    var selectedPlayerForProfile by remember { mutableStateOf<Player?>(null) }
-    
-    if (selectedPlayerForProfile != null) {
-        PlayerProfileDialog(player = selectedPlayerForProfile!!) {
-            selectedPlayerForProfile = null
-        }
-    }
 
     var nationalityFilter by remember { mutableStateOf("All") }
     var teamFilter by remember { mutableStateOf("Free Agents") }
@@ -904,9 +886,7 @@ fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, if (isOwned) themeColor else MaterialTheme.colorScheme.outlineVariant),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { selectedPlayerForProfile = p }
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
@@ -1161,125 +1141,6 @@ fun CustomizerScreen(viewModel: CricketViewModel, themeColor: Color) {
             }
         }
     }
-}
-
-@Composable
-fun PlayerProfileDialog(player: Player, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
-        },
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(player.name, fontWeight = FontWeight.Bold)
-                if (player.isCaptain) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(Icons.Default.Star, "Captain", tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
-                }
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Scouting Card
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("SCOUT REPORT", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = generateScoutNarrative(player),
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
-                    }
-                }
-
-                // Attributes Grid
-                ProfileAttributeRow("Role", player.role.name.replace("_", " "))
-                ProfileAttributeRow("Team Id", player.teamId ?: "None")
-                ProfileAttributeRow("Batting", "${player.battingHand.name.replace("_", " ")} (${player.playingStyle})")
-                ProfileAttributeRow("Bowling", player.bowlingType.name.replace("_", " "))
-                ProfileAttributeRow("Best Pos", "No. ${player.bestPosition}")
-
-                HorizontalDivider()
-
-                Text("Trait Analysis", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (player.isFinisher) TraitChip("Finisher")
-                    if (player.isPowerHitter) TraitChip("Power Hitter")
-                    if (player.isForeign) TraitChip("Overseas")
-                }
-
-                HorizontalDivider()
-
-                Text("Strategic Analysis", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                ProfileAttributeRow("Strength", player.strengths ?: "Balanced")
-                ProfileAttributeRow("Weakness", player.weakness?.name?.replace("_", " ") ?: "None Detected", isWarning = true)
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Market Valuation: PKR ${player.baseMarketValueCr} Cr",
-                    fontWeight = FontWeight.Black,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    )
-}
-
-@Composable
-fun ProfileAttributeRow(label: String, value: String, isWarning: Boolean = false) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
-        Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (isWarning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
-    }
-}
-
-@Composable
-fun TraitChip(label: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .padding(horizontal = 6.dp, vertical = 2.dp)
-    ) {
-        Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
-    }
-}
-
-fun generateScoutNarrative(player: Player): String {
-    val bSkill = player.battingSkill
-    val boSkill = player.bowlingSkill
-
-    val roleDesc = when(player.role) {
-        PlayerRole.BATSMAN -> "a specialist top-order pillar"
-        PlayerRole.BOWLER -> "a frontline strike force"
-        PlayerRole.ALL_ROUNDER -> "a versatile dynamic asset"
-        PlayerRole.WICKET_KEEPER -> "a reliable glovesman and middle-order stabilizer"
-    }
-
-    val potency = if (bSkill > 85 || boSkill > 85) "elite-tier" else if (bSkill > 75 || boSkill > 75) "high-impact" else "solid developing"
-
-    val weaknessNote = if (player.weakness != null) {
-        "However, historical data suggests a tactical vulnerability against ${player.weakness.name.replace("_", " ")} deliveries."
-    } else {
-        "Defensive technique appears robust across all bowling variations."
-    }
-
-    return "${player.name} is $roleDesc with $potency characteristics in the current regional circuit. " +
-            "Best suited for ${player.playingStyle} situations, maintaining a steady presence at No. ${player.bestPosition}. " +
-            "$weaknessNote Scout recommends disciplined match-ups."
 }
 
 // -------------------------------------------------------------
