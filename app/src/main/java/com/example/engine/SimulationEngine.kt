@@ -26,7 +26,8 @@ object SimulationEngine {
         currentRuns: Int,
         wicketsDown: Int,
         ballsBowled: Int,
-        oversLimit: Int
+        oversLimit: Int,
+        isPlaySafe: Boolean = false // New tactical parameter
     ): BallOutcome {
         // 1. Extras probability (Wide, No Ball)
         // Fast bowlers have slightly higher extra rate
@@ -70,6 +71,15 @@ object SimulationEngine {
         val batAdvLevel = (batsman.battingSkill - 50) / 100.0 // range -0.5 to 0.5
         val bowlAdvLevel = (bowler.bowlingSkill - 50) / 100.0 // range -0.5 to 0.5
 
+        // WEAKNESS SYSTEM IMPACT
+        var weaknessWktMult = 1.0
+        var weaknessBatMult = 1.0
+        if (batsman.weakness != null && batsman.weakness == bowler.bowlingType) {
+            // Bowler matches batter weakness
+            weaknessWktMult = 1.25  // increase wicket chance
+            weaknessBatMult = 0.80  // reduce timing/skill ratio
+        }
+
         // Pitch multipliers
         var pitchBatMult = 1.0
         var pitchWktMult = 1.0
@@ -99,6 +109,10 @@ object SimulationEngine {
         var styleWktMult = 1.0
 
         when (batsman.playStyle) {
+            PlayingStyle.BLITZKRIEG -> {
+                styleBatMult = 1.90
+                styleWktMult = 2.40
+            }
             PlayingStyle.AGGRESSIVE -> {
                 styleBatMult = 1.45
                 styleWktMult = 1.70
@@ -110,11 +124,19 @@ object SimulationEngine {
             PlayingStyle.BALANCED -> {}
         }
 
+        // TACTICAL "PLAY SAFE" OVERRIDE
+        var playSafeWktMult = 1.0
+        var playSafeBatMult = 1.0
+        if (isPlaySafe) {
+            playSafeWktMult = 0.40 // Reduce dismissal risk greatly
+            playSafeBatMult = 0.60 // Reduce risky shots and boundary probability
+        }
+
         // Base probabilities of a wicket
         // Average wicket probability per normal ball is around 4.5% - 5.5% in cricket
         val baseWicketChance = 0.048
-        val adjustedWktChance = baseWicketChance * (1 + bowlAdvLevel - batAdvLevel) * pitchWktMult * styleWktMult
-        val finalWktChance = adjustedWktChance.coerceIn(0.012, 0.18)
+        val adjustedWktChance = baseWicketChance * (1 + bowlAdvLevel - batAdvLevel) * pitchWktMult * styleWktMult * weaknessWktMult * playSafeWktMult
+        val finalWktChance = adjustedWktChance.coerceIn(0.010, 0.22)
 
         if (random.nextDouble() < finalWktChance) {
             // It's a wicket!
@@ -151,8 +173,8 @@ object SimulationEngine {
             val wicketComms = when (wktType) {
                 "Bowled" -> "OUT! Clean bowled! ${batsman.name} is stunned. Perfect delivery from ${bowler.name} clips the top of off-stump. Absolute beauty!"
                 "Caught" -> {
-                    val isBigHits = batsman.playStyle == PlayingStyle.AGGRESSIVE
-                    if (isBigHits && random.nextBoolean()) {
+                    val isBigHits = batsman.playStyle == PlayingStyle.AGGRESSIVE || batsman.playStyle == PlayingStyle.BLITZKRIEG
+                    if (isBigHits && random.nextDouble() < 0.7) {
                         "OUT! Caught in the deep! ${batsman.name} goes big but doesn't get the timing. Flies high and is safely taken near the boundary ropes."
                     } else {
                         "OUT! Edged and taken! Smart length from ${bowler.name}, ${batsman.name} edges it straight to the awaiting hands."
@@ -180,7 +202,7 @@ object SimulationEngine {
         val runOptions = listOf(0, 1, 2, 3, 4, 6)
         
         // Base weights adjusted by skill and pitch and styles
-        val userSkillRatio = (1.0 + batAdvLevel - bowlAdvLevel) * pitchBatMult * styleBatMult
+        val userSkillRatio = (1.0 + batAdvLevel - bowlAdvLevel) * pitchBatMult * styleBatMult * weaknessBatMult * playSafeBatMult
 
         val dotWeight = (0.50 / (userSkillRatio.coerceAtLeast(0.3))).coerceIn(0.2, 0.8)
         val singleWeight = 0.32
@@ -188,8 +210,20 @@ object SimulationEngine {
         val threeWeight = 0.01
         
         // Aggressive batters score way more boundaries
-        val baseFourWeight = if (batsman.playStyle == PlayingStyle.AGGRESSIVE) 0.16 else 0.08
-        val baseSixWeight = if (batsman.playStyle == PlayingStyle.AGGRESSIVE) 0.08 else 0.03
+        var baseFourWeight = 0.08
+        var baseSixWeight = 0.03
+
+        when(batsman.playStyle) {
+            PlayingStyle.BLITZKRIEG -> {
+                baseFourWeight = 0.22
+                baseSixWeight = 0.14
+            }
+            PlayingStyle.AGGRESSIVE -> {
+                baseFourWeight = 0.16
+                baseSixWeight = 0.08
+            }
+            else -> {}
+        }
 
         val fourWeight = baseFourWeight * userSkillRatio
         val sixWeight = baseSixWeight * userSkillRatio

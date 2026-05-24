@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import com.example.data.models.*
 import com.example.ui.CricketViewModel
 import com.example.ui.LeagueStanding
@@ -545,6 +546,14 @@ fun LeagueDashboardScreen(
 fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
     val userTeam = viewModel.userTeam
     var playingXIForeignCount = userTeam.players.take(11).count { it.isForeign }
+    
+    var selectedPlayerForProfile by remember { mutableStateOf<Player?>(null) }
+    
+    if (selectedPlayerForProfile != null) {
+        PlayerProfileDialog(player = selectedPlayerForProfile!!) {
+            selectedPlayerForProfile = null
+        }
+    }
 
     val squadValidation = viewModel.validateSquadRoster(userTeam.players)
     val lineupValidation = viewModel.validatePlayingXILineup(userTeam.players.take(11))
@@ -626,6 +635,7 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable { selectedPlayerForProfile = p }
                             .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -700,6 +710,7 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable { selectedPlayerForProfile = p }
                                 .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -722,6 +733,14 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
 fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
     val players by viewModel.playersStateFlow.collectAsState()
     val userTeam = viewModel.userTeam
+
+    var selectedPlayerForProfile by remember { mutableStateOf<Player?>(null) }
+    
+    if (selectedPlayerForProfile != null) {
+        PlayerProfileDialog(player = selectedPlayerForProfile!!) {
+            selectedPlayerForProfile = null
+        }
+    }
 
     var nationalityFilter by remember { mutableStateOf("All") }
     var teamFilter by remember { mutableStateOf("Free Agents") }
@@ -886,7 +905,9 @@ fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, if (isOwned) themeColor else MaterialTheme.colorScheme.outlineVariant),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { selectedPlayerForProfile = p }
             ) {
                 Row(
                     modifier = Modifier.padding(12.dp),
@@ -1143,6 +1164,318 @@ fun CustomizerScreen(viewModel: CricketViewModel, themeColor: Color) {
     }
 }
 
+@Composable
+fun BatterTacticsCard(
+    playerName: String,
+    currentStyle: PlayingStyle,
+    onStyleChange: (PlayingStyle) -> Unit,
+    isStriker: Boolean,
+    themeColor: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, if (isStriker) themeColor else MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(if (isStriker) "Striker: " else "Non-Striker: ", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                Text(playerName, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                TacticButton("🛡️ Def", PlayingStyle.DEFENSIVE, currentStyle == PlayingStyle.DEFENSIVE, Modifier.weight(1f)) { onStyleChange(PlayingStyle.DEFENSIVE) }
+                TacticButton("⚖️ Bal", PlayingStyle.BALANCED, currentStyle == PlayingStyle.BALANCED, Modifier.weight(1f)) { onStyleChange(PlayingStyle.BALANCED) }
+                TacticButton("⚡ Agg", PlayingStyle.AGGRESSIVE, currentStyle == PlayingStyle.AGGRESSIVE, Modifier.weight(1f)) { onStyleChange(PlayingStyle.AGGRESSIVE) }
+                TacticButton("🔥 Blitz", PlayingStyle.BLITZKRIEG, currentStyle == PlayingStyle.BLITZKRIEG, Modifier.weight(1f)) { onStyleChange(PlayingStyle.BLITZKRIEG) }
+            }
+        }
+    }
+}
+
+@Composable
+fun TacticButton(label: String, style: PlayingStyle, isSelected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val bgColor = if (isSelected) {
+        when(style) {
+            PlayingStyle.DEFENSIVE -> Color(0xFF4CAF50)
+            PlayingStyle.BALANCED -> Color(0xFF2196F3)
+            PlayingStyle.AGGRESSIVE -> Color(0xFFFF9800)
+            PlayingStyle.BLITZKRIEG -> Color(0xFFF44336)
+        }
+    } else MaterialTheme.colorScheme.surfaceVariant
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(bgColor)
+            .clickable { onClick() }
+            .padding(vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+@Composable
+fun ScoutingSheetContent(
+    player: Player,
+    type: String,
+    viewModel: CricketViewModel,
+    onClose: () -> Unit
+) {
+    val themeColor = Color(0xFF3B82F6)
+    val isBatter = type == "BATTER"
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+            .padding(bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = if (isBatter) "Batter Scouting Report" else "Bowler Intel Report",
+                    fontSize = 12.sp,
+                    color = themeColor,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = player.name,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+            IconButton(onClick = onClose) {
+                Icon(Icons.Default.Close, contentDescription = "Close")
+            }
+        }
+
+        HorizontalDivider()
+
+        if (isBatter) {
+            ScoutingInfoRow("Weakness", player.weakness?.name?.replace("_", " ") ?: "None")
+            ScoutingInfoRow("Strength", player.strengths)
+            ScoutingInfoRow("Finisher Trait", if (player.isFinisher) "✅ YES" else "❌ NO")
+            ScoutingInfoRow("Power Hitter", if (player.isPowerHitter) "🚀 YES" else "❌ NO")
+            ScoutingInfoRow("Best Position", "Early Middle (#${player.bestPosition})")
+            
+            val sStyle by viewModel.strikerStyle.collectAsState()
+            val nsStyle by viewModel.nonStrikerStyle.collectAsState()
+            val strikerName by viewModel.strikerName.collectAsState()
+            val currentStyle = if (player.name == strikerName) sStyle else nsStyle
+            ScoutingInfoRow("Aggression", currentStyle.name)
+
+        } else {
+            ScoutingInfoRow("Bowling Type", player.bowlingType.name.replace("_", " "))
+            ScoutingInfoRow("Speed", "${player.bowlingSpeed} km/h")
+            ScoutingInfoRow("Swing Ability", "${player.swingAbility}/100")
+            ScoutingInfoRow("Turn Ability", "${player.turnAbility}/100")
+            
+            // TACTICAL Danger Note
+            val dangerNote = when {
+                player.bowlingSkill > 85 -> "🔴 EXTREME DANGER: Avoid taking risks."
+                player.bowlingSkill > 75 -> "🟡 HIGH THREAT: Play with caution."
+                else -> "🟢 MODERATE: Target for runs."
+            }
+            ScoutingInfoRow("Tactical Note", dangerNote)
+
+            // PLAY SAFE TOGGLE (PART 3)
+            Spacer(modifier = Modifier.height(8.dp))
+            val strikerName by viewModel.strikerName.collectAsState()
+            val battingTeamNow by viewModel.battingTeamNow.collectAsState()
+            val bSquad = battingTeamNow.players
+            val striker = bSquad.firstOrNull { it.name == strikerName }
+            
+            if (striker != null) {
+                val playSafeMap by viewModel.playSafeMatchups.collectAsState()
+                val isPlaySafe = playSafeMap[Pair(striker.id, player.id)] ?: false
+                
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable { viewModel.togglePlaySafe(striker.id, player.id) },
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isPlaySafe) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    border = if (isPlaySafe) BorderStroke(2.dp, Color(0xFF2E7D32)) else null
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            if (isPlaySafe) Icons.Default.CheckCircle else Icons.Default.Info,
+                            contentDescription = null,
+                            tint = if (isPlaySafe) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Play Safe Against This Spell",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                "Focus on defense and survival. Highly reduces dismissal risk.",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = isPlaySafe,
+                            onCheckedChange = { viewModel.togglePlaySafe(striker.id, player.id) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ScoutingInfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontSize = 13.sp, color = MaterialTheme.colorScheme.outline)
+        Text(value, fontSize = 13.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun PlayerProfileDialog(player: Player, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(player.name, fontWeight = FontWeight.Bold)
+                if (player.isCaptain) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(Icons.Default.Star, "Captain", tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
+                }
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Scouting Card
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("SCOUT REPORT", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = generateScoutNarrative(player),
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp
+                        )
+                    }
+                }
+
+                // Attributes Grid
+                ProfileAttributeRow("Role", player.role.name.replace("_", " "))
+                ProfileAttributeRow("Team Id", player.teamId ?: "None")
+                ProfileAttributeRow("Batting", "${player.battingHand.name.replace("_", " ")} (${player.playingStyle})")
+                ProfileAttributeRow("Bowling", player.bowlingType.name.replace("_", " "))
+                ProfileAttributeRow("Best Pos", "No. ${player.bestPosition}")
+
+                HorizontalDivider()
+
+                Text("Trait Analysis", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (player.isFinisher) TraitChip("Finisher")
+                    if (player.isPowerHitter) TraitChip("Power Hitter")
+                    if (player.isForeign) TraitChip("Overseas")
+                }
+
+                HorizontalDivider()
+
+                Text("Strategic Analysis", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                ProfileAttributeRow("Strength", player.strengths ?: "Balanced")
+                ProfileAttributeRow("Weakness", player.weakness?.name?.replace("_", " ") ?: "None Detected", isWarning = true)
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Market Valuation: PKR ${player.baseMarketValueCr} Cr",
+                    fontWeight = FontWeight.Black,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun ProfileAttributeRow(label: String, value: String, isWarning: Boolean = false) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
+        Text(value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (isWarning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+fun TraitChip(label: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
+    }
+}
+
+fun generateScoutNarrative(player: Player): String {
+    val bSkill = player.battingSkill
+    val boSkill = player.bowlingSkill
+
+    val roleDesc = when(player.role) {
+        PlayerRole.BATSMAN -> "a specialist top-order pillar"
+        PlayerRole.BOWLER -> "a frontline strike force"
+        PlayerRole.ALL_ROUNDER -> "a versatile dynamic asset"
+        PlayerRole.WICKET_KEEPER -> "a reliable glovesman and middle-order stabilizer"
+    }
+
+    val potency = if (bSkill > 85 || boSkill > 85) "elite-tier" else if (bSkill > 75 || boSkill > 75) "high-impact" else "solid developing"
+
+    val weaknessNote = if (player.weakness != null) {
+        "However, historical data suggests a tactical vulnerability against ${player.weakness.name.replace("_", " ")} deliveries."
+    } else {
+        "Defensive technique appears robust across all bowling variations."
+    }
+
+    return "${player.name} is $roleDesc with $potency characteristics in the current regional circuit. " +
+            "Best suited for ${player.playingStyle} situations, maintaining a steady presence at No. ${player.bestPosition}. " +
+            "$weaknessNote Scout recommends disciplined match-ups."
+}
+
 // -------------------------------------------------------------
 // TAB 4: BALL SIMULATOR MATCH CENTER
 // -------------------------------------------------------------
@@ -1279,6 +1612,12 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
     val currentInnings by viewModel.currentInnings.collectAsState()
     val isUserBatting by viewModel.isUserBatting.collectAsState()
 
+    var scoutingPlayer by remember { mutableStateOf<Player?>(null) }
+    var scoutingType by remember { mutableStateOf("BATTER") } // or BOWLER
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    var showSheet by remember { mutableStateOf(false) }
+
     val runs by viewModel.runs.collectAsState()
     val wickets by viewModel.wickets.collectAsState()
     val balls by viewModel.balls.collectAsState()
@@ -1410,6 +1749,53 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
         modifier = Modifier.fillMaxWidth()
     )
 
+    // INDEPENDENT BATTER AGGRESSION CONTROL (PART 2)
+    if (isUserBatting) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val sStyle by viewModel.strikerStyle.collectAsState()
+            val nsStyle by viewModel.nonStrikerStyle.collectAsState()
+
+            BatterTacticsCard(
+                playerName = strikerName,
+                currentStyle = sStyle,
+                onStyleChange = { viewModel.setStrikerStyle(it) },
+                isStriker = true,
+                themeColor = battingTeamColor
+            )
+
+            BatterTacticsCard(
+                playerName = nonStrikerName,
+                currentStyle = nsStyle,
+                onStyleChange = { viewModel.setNonStrikerStyle(it) },
+                isStriker = false,
+                themeColor = battingTeamColor
+            )
+        }
+    }
+
+    if (showSheet && scoutingPlayer != null) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
+        ) {
+            ScoutingSheetContent(
+                player = scoutingPlayer!!,
+                type = scoutingType,
+                viewModel = viewModel,
+                onClose = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) showSheet = false
+                    }
+                }
+            )
+        }
+    }
+
     // Current Partnership Status
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -1431,7 +1817,16 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             // Striker
             val sStats = bStatsMap[strikerName]
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable {
+                    if (!isUserBatting) {
+                        val p = battingTeamNow.players.firstOrNull { it.name == strikerName }
+                        if (p != null) {
+                            scoutingPlayer = p
+                            scoutingType = "BATTER"
+                            showSheet = true
+                        }
+                    }
+                },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1463,7 +1858,16 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             // Non-striker
             val nsStats = bStatsMap[nonStrikerName]
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable {
+                    if (!isUserBatting) {
+                        val p = battingTeamNow.players.firstOrNull { it.name == nonStrikerName }
+                        if (p != null) {
+                            scoutingPlayer = p
+                            scoutingType = "BATTER"
+                            showSheet = true
+                        }
+                    }
+                },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1497,7 +1901,16 @@ fun LiveGameplayPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
             // Bowler
             val bowStats = boStatsMap[currentBowlerName]
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable {
+                    if (isUserBatting) {
+                        val p = bowlingTeamNow.players.firstOrNull { it.name == currentBowlerName }
+                        if (p != null) {
+                            scoutingPlayer = p
+                            scoutingType = "BOWLER"
+                            showSheet = true
+                        }
+                    }
+                },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {

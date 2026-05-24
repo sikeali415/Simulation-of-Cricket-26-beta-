@@ -1,6 +1,6 @@
 {
-  "name": "Cricket Manager 26",
-  "description": "The next generation of cricket management simulation. Lead your franchise to victory in the 2026 season.",
+  "name": "Sike's Cricket Manager 26 Beta",
+  "description": "The next generation of cricket management simulation (v1 Beta). Lead your franchise to victory in the 2026 season.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

@@ -13,13 +13,30 @@ enum class PlayerRole {
 enum class PlayingStyle {
     AGGRESSIVE, // High risk, many boundaries
     DEFENSIVE,  // Low risk, many dot balls and singles
-    BALANCED    // Balanced risk
+    BALANCED,   // Balanced risk
+    BLITZKRIEG  // Maximum risk, maximum power
 }
 
 enum class DeliveryStyle {
     FAST,   // High wicket potential, higher run rate potential
     SPIN,   // Lower run rate potential, effective on DUSTY pitches
     MEDIUM  // Balanced pace and control
+}
+
+enum class BattingHand {
+    RIGHT_HAND,
+    LEFT_HAND
+}
+
+enum class BowlingType {
+    LEG_SPIN,
+    OFF_SPIN,
+    LEFT_ARM_LEG_SPIN,
+    LEFT_ARM_OFF_SPIN,
+    CHINAMAN,
+    MEDIUM_VARIATIONS,
+    FAST_BOWLER,
+    FAST_BOWLER_EXTRA_PACE
 }
 
 enum class MatchFormat(val displayName: String, val maxOvers: Int, val maxOversPerBowler: Int) {
@@ -36,11 +53,22 @@ data class Player(
     val bowlingSkill: Int, // 1 to 100
     val playStyle: PlayingStyle = PlayingStyle.BALANCED,
     val deliveryStyle: DeliveryStyle = DeliveryStyle.MEDIUM,
+    val battingHand: BattingHand = BattingHand.RIGHT_HAND,
+    val bowlingType: BowlingType = BowlingType.FAST_BOWLER,
+    val weakness: BowlingType? = null,
+    val strengths: String = "Reliable under pressure",
+    val bestPosition: Int = 3,
+    val isFinisher: Boolean = false,
+    val isPowerHitter: Boolean = false,
+    val bowlingSpeed: Int = 135, // Average speed in km/h
+    val swingAbility: Int = 40,   // 1 to 100
+    val turnAbility: Int = 30,    // 1 to 100
     val nationality: String = "Pakistan",
     val county: String = "Lahore",
     val isForeign: Boolean = false,
     var marketPriceCr: Double = 1.0,
     var teamId: String? = null,
+    val isCaptain: Boolean = false,
     // Season accumulators
     var seasonMatches: Int = 0,
     var seasonRuns: Int = 0,
