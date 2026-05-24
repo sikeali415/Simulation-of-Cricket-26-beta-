@@ -373,6 +373,8 @@ export const aggregateStats = (player: Player, formats: Format[]): PlayerStats =
         const s = player.stats[f];
         if (s) {
             total.matches += s.matches;
+            total.inningsBatting += (s.inningsBatting || 0);
+            total.inningsBowling += (s.inningsBowling || 0);
             total.runs += s.runs;
             total.ballsFaced += s.ballsFaced;
             total.dismissals += s.dismissals;
