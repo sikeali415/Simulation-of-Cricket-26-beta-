@@ -1140,6 +1140,56 @@ fun CustomizerScreen(viewModel: CricketViewModel, themeColor: Color) {
             }
         }
 
+        // VERSION V1.0 UPDATE LOG
+        Card(
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Info, contentDescription = null, tint = themeColor)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("What's New in v1.0", fontSize = 14.sp, fontWeight = FontWeight.Black)
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("•", fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 6.dp))
+                        Text("🎮 Real-time interactive match simulation engine", fontSize = 11.sp)
+                    }
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("•", fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 6.dp))
+                        Text("📈 Local League standings with NRR calculation", fontSize = 11.sp)
+                    }
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("•", fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 6.dp))
+                        Text("🔄 Dynamic player transfers & budget management", fontSize = 11.sp)
+                    }
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("•", fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 6.dp))
+                        Text("🎨 Custom franchise colors & branding support", fontSize = 11.sp)
+                    }
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("•", fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 6.dp))
+                        Text("🏟️ Advanced pitch types (Dusty, Green, Flat, Balanced)", fontSize = 11.sp)
+                    }
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("•", fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 6.dp))
+                        Text("📶 Full Offline capabilities (PWA ready)", fontSize = 11.sp)
+                    }
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                Text(
+                    "Manager Version: v1.0.0-PRO-SIKE",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
+        }
+
         // Sponsor options
         Card(
             shape = RoundedCornerShape(14.dp),
