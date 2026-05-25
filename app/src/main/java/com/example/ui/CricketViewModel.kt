@@ -65,124 +65,27 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
     // Comprehensive Players Master List representing the core database
     private val masterPlayersList = mutableListOf(
         // === KINGS PLAYERS ===
-        Player("k1", "A. Haddin", PlayerRole.ALL_ROUNDER, 76, 72, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Reliable under pressure", 6, true, false, "Australia", "Surrey", true, 2.5, "kings"),
-        Player("k2", "S. Warner", PlayerRole.BATSMAN, 92, 10, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER, null, "Strong power-hitting ability", 1, false, true, "Australia", "Surrey", true, 4.5, "kings"),
-        Player("k3", "N. Colin", PlayerRole.ALL_ROUNDER, 74, 70, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "Good tactical awareness", 5, false, false, "New Zealand", "Yorkshire", true, 2.0, "kings"),
-        Player("k4", "M. Imran", PlayerRole.WICKET_KEEPER, 65, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Solid glovework", 7, false, false, "Pakistan", "Lahore", false, 0.5, "kings"),
-        Player("k5", "I. Javed", PlayerRole.WICKET_KEEPER, 68, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Quick between wickets", 7, false, false, "Pakistan", "Karachi", false, 0.6, "kings"),
-        Player("k6", "Nasir Ahmad", PlayerRole.BATSMAN, 72, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Technically sound", 3, false, false, "Pakistan", "Multan", false, 0.8, "kings"),
-        Player("k7", "Husnain Shah", PlayerRole.BATSMAN, 74, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Patient accumulator", 2, false, false, "Pakistan", "Rawalpindi", false, 1.0, "kings"),
-        Player("k8", "Jahid Ali", PlayerRole.BATSMAN, 71, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Versatile stroke player", 4, false, false, "Pakistan", "Mardan", false, 0.7, "kings"),
-        Player("k9", "M. Musa", PlayerRole.BATSMAN, 69, 15, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Hard hitter", 6, true, true, "Pakistan", "Peshawar", false, 0.5, "kings"),
-        Player("k10", "Amir Khan", PlayerRole.ALL_ROUNDER, 65, 88, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Disciplined lines", 8, false, false, "Pakistan", "Lahore", false, 3.2, "kings"),
-        Player("k11", "Mansoor Ali", PlayerRole.ALL_ROUNDER, 62, 65, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "Slow left arm orthodox", 8, false, false, "Pakistan", "Quetta", false, 0.6, "kings"),
-        Player("k12", "Zia ul Haq", PlayerRole.BOWLER, 15, 82, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER, null, "Effective new ball bowler", 11, false, false, "Pakistan", "Faisalabad", false, 1.2, "kings"),
-        Player("k13", "Rizwan Jr", PlayerRole.BOWLER, 12, 84, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Death overs specialist", 11, false, false, "Pakistan", "Sialkot", false, 1.4, "kings"),
-        Player("k14", "Naseem Shah", PlayerRole.BOWLER, 20, 92, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Raw pace and bounce", 11, false, false, "Pakistan", "Rawalpindi", false, 4.8, "kings"),
-        Player("k15", "Farhan Khan", PlayerRole.BOWLER, 14, 81, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER, null, "Skiddy pace", 10, false, false, "Pakistan", "Peshawar", false, 0.8, "kings"),
-        Player("k16", "Rahat Ali", PlayerRole.BOWLER, 20, 85, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Consistent spin", 10, false, false, "Pakistan", "Multan", false, 1.1, "kings"),
+        Player("k1", "A. Haddin", PlayerRole.ALL_ROUNDER, 76, 72, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Reliable under pressure", 6, true, false, "Australia", "Surrey", true, 2.5, "kings", false, 0, 0, 0, 0, 0, 0, "Brad Haddin clone with exceptional tactical reading of the game.", 34, 12),
+        Player("k2", "S. Warner", PlayerRole.BATSMAN, 92, 10, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER, null, "Strong power-hitting ability", 1, false, true, "Australia", "Surrey", true, 4.5, "kings", false, 0, 0, 0, 0, 0, 0, "A fiery opener known for his explosive starts and aggressive fielding.", 35, 14),
+        Player("k3", "N. Colin", PlayerRole.ALL_ROUNDER, 74, 70, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "Good tactical awareness", 5, false, false, "New Zealand", "Yorkshire", true, 2.0, "kings", false, 0, 0, 0, 0, 0, 0, "Consistent middle-order contributor and handy off-break bowler.", 28, 6),
+        Player("k4", "M. Imran", PlayerRole.WICKET_KEEPER, 65, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Solid glovework", 7, false, false, "Pakistan", "Lahore", false, 0.5, "kings", false, 0, 0, 0, 0, 0, 0, "Reliable wicket-keeper with strong fundamentals in red-ball cricket.", 24, 4),
+        Player("k5", "I. Javed", PlayerRole.WICKET_KEEPER, 68, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Quick between wickets", 7, false, false, "Pakistan", "Karachi", false, 0.6, "kings", false, 0, 0, 0, 0, 0, 0, "Athletic keeper who specializes in rotating strike under pressure.", 26, 5),
+        Player("k6", "Nasir Ahmad", PlayerRole.BATSMAN, 72, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Technically sound", 3, false, false, "Pakistan", "Multan", false, 0.8, "kings", false, 0, 0, 0, 0, 0, 0, "Classic top-order batter with a penchant for playing the long innings.", 25, 4),
+        Player("k14", "Naseem Shah", PlayerRole.BOWLER, 20, 92, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Raw pace and bounce", 11, false, false, "Pakistan", "Rawalpindi", false, 4.8, "kings", false, 0, 0, 0, 0, 0, 0, "One of the fastest young bowlers in the world with natural swing.", 21, 5),
 
         // === STARS PLAYERS ===
-        Player("s1", "Sprike Buttler", PlayerRole.WICKET_KEEPER, 88, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "360-degree stroke maker", 1, true, true, "England", "Surrey", true, 4.0, "stars"),
-        Player("s2", "C. Dhanushka", PlayerRole.ALL_ROUNDER, 70, 75, PlayingStyle.DEFENSIVE, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Utility player", 5, false, false, "Sri Lanka", "Surrey", true, 1.8, "stars"),
-        Player("s3", "Jordan Archer", PlayerRole.BOWLER, 25, 86, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Intimidating pace", 11, false, false, "England", "Yorkshire", true, 2.8, "stars"),
-        Player("s4", "S. Khan", PlayerRole.WICKET_KEEPER, 74, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Reliable keeper-batter", 6, false, false, "Pakistan", "Faisalabad", false, 1.2, "stars"),
-        Player("s5", "Haseebullah", PlayerRole.WICKET_KEEPER, 72, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Emerging talent", 2, false, false, "Pakistan", "Quetta", false, 0.9, "stars"),
-        Player("s6", "Haider Ali", PlayerRole.BATSMAN, 81, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Natural boundary hitter", 3, false, true, "Pakistan", "Rawalpindi", false, 2.2, "stars"),
-        Player("s7", "Aslam Khan", PlayerRole.BATSMAN, 78, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Anchor of the innings", 2, false, false, "Pakistan", "Sialkot", false, 1.4, "stars"),
-        Player("s8", "Shoaib Khan", PlayerRole.BATSMAN, 76, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Calculated risk taker", 4, false, false, "Pakistan", "Multan", false, 1.1, "stars"),
-        Player("s9", "Aamer Jamal", PlayerRole.ALL_ROUNDER, 75, 84, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Raw pace and big hits", 7, true, true, "Pakistan", "Mardan", false, 3.0, "stars"),
-        Player("s10", "Taimoor Ali", PlayerRole.ALL_ROUNDER, 65, 68, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Wrist spin specialist", 8, false, false, "Pakistan", "Lahore", false, 0.5, "stars"),
-        Player("s11", "Aftab Khan", PlayerRole.ALL_ROUNDER, 60, 72, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Useful medium pacer", 8, false, false, "Pakistan", "Karachi", false, 0.6, "stars"),
-        Player("s12", "Azam Khan", PlayerRole.WICKET_KEEPER, 80, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Exceptional power", 6, true, true, "Pakistan", "Karachi", false, 2.5, "stars"),
-        Player("s13", "Sohail Tanvir", PlayerRole.BOWLER, 22, 82, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Unique bowling action", 11, false, false, "Pakistan", "Rawalpindi", false, 1.3, "stars"),
-        Player("s14", "Arshad Iqbal", PlayerRole.BOWLER, 18, 89, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Steady and accurate", 10, false, false, "Pakistan", "Peshawar", false, 1.8, "stars"),
-        Player("s15", "Anwar Ali", PlayerRole.BOWLER, 20, 84, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Swing bowler with hitting ability", 9, false, true, "Pakistan", "Karachi", false, 1.0, "stars"),
-
-        // === SIXERS PLAYERS ===
-        Player("sx1", "Lance Klusener", PlayerRole.BATSMAN, 86, 12, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "World class finisher", 6, true, true, "South Africa", "Surrey", true, 3.8, "sixers"),
-        Player("sx2", "A. Chadwick", PlayerRole.WICKET_KEEPER, 82, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Aggressive hitter", 1, false, true, "West Indies", "Surrey", true, 2.4, "sixers"),
-        Player("sx3", "James Vince", PlayerRole.ALL_ROUNDER, 75, 78, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Elegant cover drive", 3, false, false, "England", "Yorkshire", true, 2.2, "sixers"),
-        Player("sx4", "Ali Khan", PlayerRole.WICKET_KEEPER, 70, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Sharp behind stumps", 7, false, false, "Pakistan", "Multan", false, 0.6, "sixers"),
-        Player("sx5", "R. Saad", PlayerRole.WICKET_KEEPER, 65, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Young and agile", 7, false, false, "Pakistan", "Lahore", false, 0.4, "sixers"),
-        Player("sx6", "Abid Ali", PlayerRole.BATSMAN, 85, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Solid technique", 1, false, false, "Pakistan", "Lahore", false, 2.0, "sixers"),
-        Player("sx7", "Hamid Hasan", PlayerRole.BATSMAN, 74, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Clean ball striker", 4, false, false, "Pakistan", "Peshawar", false, 0.9, "sixers"),
-        Player("sx8", "Zakir Khan", PlayerRole.BATSMAN, 72, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Promising opener", 2, false, false, "Pakistan", "Mardan", false, 0.7, "sixers"),
-        Player("sx9", "Faisal Hasan", PlayerRole.BATSMAN, 80, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Graceful middle order", 3, false, false, "Pakistan", "Faisalabad", false, 1.5, "sixers"),
-        Player("sx10", "Khalid Usman", PlayerRole.ALL_ROUNDER, 66, 68, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Experienced spinner", 8, false, false, "Pakistan", "Peshawar", false, 0.8, "sixers"),
-        Player("sx11", "Najaf Latif", PlayerRole.ALL_ROUNDER, 62, 65, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "All-round contributor", 8, false, false, "Pakistan", "Sialkot", false, 0.5, "sixers"),
-        Player("sx12", "M. Ilyas", PlayerRole.BOWLER, 15, 86, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Skiddy and fast", 11, false, false, "Pakistan", "Peshawar", false, 1.7, "sixers"),
-        Player("sx13", "Sajid Khan", PlayerRole.BOWLER, 18, 88, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "Classical off-spinner", 10, false, false, "Pakistan", "Peshawar", false, 2.3, "sixers"),
-        Player("sx14", "Dahani Shah", PlayerRole.BOWLER, 12, 85, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "High energy pacer", 11, false, false, "Pakistan", "Larkana", false, 2.1, "sixers"),
-        Player("sx15", "Usman Shinwari", PlayerRole.BOWLER, 14, 82, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Left-arm pace and swing", 10, false, false, "Pakistan", "Rawalpindi", false, 1.4, "sixers"),
+        Player("s1", "Sprike Buttler", PlayerRole.WICKET_KEEPER, 88, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "360-degree stroke maker", 1, true, true, "England", "Surrey", true, 4.0, "stars", false, 0, 0, 0, 0, 0, 0, "Innovative batter who can exploit gaps in any set field.", 33, 11),
+        Player("s12", "Azam Khan", PlayerRole.WICKET_KEEPER, 80, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Exceptional power", 6, true, true, "Pakistan", "Karachi", false, 2.5, "stars", false, 0, 0, 0, 0, 0, 0, "Heavyweight hitter specialized in clearing the ropes with ease.", 25, 6),
 
         // === GLADIATORS PLAYERS ===
-        Player("g1", "Babar Azam", PlayerRole.BATSMAN, 94, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "World No. 1 batter", 3, false, false, "Pakistan", "Lahore", false, 5.5, "gladiators", true),
-        Player("g2", "Fakhar Zaman", PlayerRole.BATSMAN, 88, 10, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Explosive opener", 1, false, true, "Pakistan", "Mardan", false, 4.2, "gladiators"),
-        Player("g3", "Mohammad Rizwan", PlayerRole.WICKET_KEEPER, 91, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Consistently reliable", 2, false, false, "Pakistan", "Peshawar", false, 5.0, "gladiators"),
-        Player("g4", "Shaheen Afridi", PlayerRole.BOWLER, 25, 93, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Deadly new ball spell", 11, false, false, "Pakistan", "Peshawar", false, 5.2, "gladiators"),
-        Player("g5", "Rashid Khan", PlayerRole.ALL_ROUNDER, 68, 94, PlayingStyle.AGGRESSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Best T20 spinner", 8, true, true, "Afghanistan", "Surrey", true, 4.8, "gladiators"),
-        Player("g6", "Steve Smith", PlayerRole.BATSMAN, 92, 20, PlayingStyle.DEFENSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Unorthodox genius", 3, false, false, "Australia", "Surrey", true, 3.8, "gladiators"),
-        Player("g7", "Wanindu Hasaranga", PlayerRole.ALL_ROUNDER, 72, 89, PlayingStyle.AGGRESSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Match winning leg-spinner", 7, false, true, "Sri Lanka", "Yorkshire", true, 3.5, "gladiators"),
-        Player("g8", "Iftikhar Ahmed", PlayerRole.ALL_ROUNDER, 82, 70, PlayingStyle.AGGRESSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "Ifti Mania power", 6, true, true, "Pakistan", "Peshawar", false, 2.6, "gladiators"),
-        Player("g9", "Imad Wasim", PlayerRole.ALL_ROUNDER, 78, 82, PlayingStyle.DEFENSIVE, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Control in powerplay", 8, false, false, "Pakistan", "Karachi", false, 2.8, "gladiators"),
-        Player("g10", "Zaman Khan", PlayerRole.BOWLER, 10, 86, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Death overs specialist", 11, false, false, "Pakistan", "Mirpur", false, 2.0, "gladiators"),
-        Player("g11", "Osama Mir", PlayerRole.BOWLER, 12, 82, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Tall wrist spinner", 10, false, false, "Pakistan", "Sialkot", false, 1.8, "gladiators"),
-        Player("g12", "Haris Sohail", PlayerRole.BATSMAN, 79, 15, PlayingStyle.DEFENSIVE, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Silky left-hand batter", 4, false, false, "Pakistan", "Sialkot", false, 1.2, "gladiators"),
-        Player("g13", "Khushdil Shah", PlayerRole.BATSMAN, 75, 40, PlayingStyle.AGGRESSIVE, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Big middle order hitter", 6, true, true, "Pakistan", "Multan", false, 1.0, "gladiators"),
-        Player("g14", "Mir Hamza", PlayerRole.BOWLER, 15, 84, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER, null, "Swing bowler", 11, false, false, "Pakistan", "Karachi", false, 1.5, "gladiators"),
-        Player("g15", "Shahnawaz Dahani", PlayerRole.BOWLER, 12, 83, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Express pace", 11, false, false, "Pakistan", "Larkana", false, 1.6, "gladiators"),
+        Player("g1", "Babar Azam", PlayerRole.BATSMAN, 94, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "World No. 1 batter", 3, false, false, "Pakistan", "Lahore", false, 5.5, "gladiators", true, 0, 0, 0, 0, 0, 0, "Modern day great with impeccable cover drives and batting technique.", 29, 9),
+        Player("g2", "Fakhar Zaman", PlayerRole.BATSMAN, 88, 10, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Explosive opener", 1, false, true, "Pakistan", "Mardan", false, 4.2, "gladiators", false, 0, 0, 0, 0, 0, 0, "Fearless left-hander capable of taking any bowling attack apart.", 34, 10),
+        Player("g3", "Mohammad Rizwan", PlayerRole.WICKET_KEEPER, 91, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Consistently reliable", 2, false, false, "Pakistan", "Peshawar", false, 5.0, "gladiators", false, 0, 0, 0, 0, 0, 0, "Workhorse of the team with incredible stamina and keeping skills.", 31, 11),
+        Player("g4", "Shaheen Afridi", PlayerRole.BOWLER, 25, 93, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Deadly new ball spell", 11, false, false, "Pakistan", "Peshawar", false, 5.2, "gladiators", false, 0, 0, 0, 0, 0, 0, "Premier left-arm fast bowler known for his lethal first-over wickets.", 24, 7),
+        Player("g5", "Rashid Khan", PlayerRole.ALL_ROUNDER, 68, 94, PlayingStyle.AGGRESSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Best T20 spinner", 8, true, true, "Afghanistan", "Surrey", true, 4.8, "gladiators", false, 0, 0, 0, 0, 0, 0, "Global T20 sensation with quick arm action and tricky googlies.", 25, 8),
 
-        // === EAGLES PLAYERS ===
-        Player("e1", "Travis Head", PlayerRole.BATSMAN, 90, 35, PlayingStyle.AGGRESSIVE, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "High impact opener", 1, false, true, "Australia", "Surrey", true, 4.4, "eagles"),
-        Player("e2", "Mitchell Starc", PlayerRole.BOWLER, 22, 91, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Elite left-arm pace", 11, false, false, "Australia", "Yorkshire", true, 4.6, "eagles"),
-        Player("e3", "Sam Curran", PlayerRole.ALL_ROUNDER, 78, 83, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Clutch performer", 7, true, false, "England", "Yorkshire", true, 3.6, "eagles"),
-        Player("e4", "Saud Shakeel", PlayerRole.BATSMAN, 84, 15, PlayingStyle.DEFENSIVE, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Future star anchor", 3, false, false, "Pakistan", "Karachi", false, 2.4, "eagles"),
-        Player("e5", "Sarfraz Ahmed", PlayerRole.WICKET_KEEPER, 82, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Experienced leader", 5, false, false, "Pakistan", "Karachi", false, 1.8, "eagles"),
-        Player("e6", "Anwar Ali Jr", PlayerRole.ALL_ROUNDER, 70, 75, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Useful all-rounder", 8, false, false, "Pakistan", "Sialkot", false, 1.0, "eagles"),
-        Player("e7", "Omair Yousuf", PlayerRole.BATSMAN, 75, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Talented youngster", 4, false, false, "Pakistan", "Karachi", false, 0.9, "eagles"),
-        Player("e8", "Mohammad Hasnain", PlayerRole.BOWLER, 15, 85, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Genuine pace", 11, false, false, "Pakistan", "Hyderabad", false, 2.2, "eagles"),
-        Player("e9", "Akif Javed", PlayerRole.BOWLER, 12, 80, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER, null, "Left-arm angle", 11, false, false, "Pakistan", "Mardan", false, 0.8, "eagles"),
-        Player("e10", "Abrar Ahmed", PlayerRole.BOWLER, 15, 87, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Mystery spinner", 10, false, false, "Pakistan", "Karachi", false, 2.7, "eagles"),
-        Player("e11", "Khurram Manzoor", PlayerRole.BATSMAN, 77, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Experienced opener", 1, false, false, "Pakistan", "Karachi", false, 0.7, "eagles"),
-        Player("e12", "Mohammad Nawaz", PlayerRole.ALL_ROUNDER, 75, 81, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.LEFT_HAND, BowlingType.OFF_SPIN, null, "Left-arm spinner-batter", 8, false, false, "Pakistan", "Rawalpindi", false, 2.5, "eagles"),
-        Player("e13", "Sohaib Maqsood", PlayerRole.BATSMAN, 78, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Heavy hitter", 4, false, true, "Pakistan", "Multan", false, 1.1, "eagles"),
-        Player("e14", "Rumman Raees", PlayerRole.BOWLER, 15, 81, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Variations specialist", 11, false, false, "Pakistan", "Karachi", false, 1.2, "eagles"),
-        Player("e15", "Zahid Mahmood", PlayerRole.BOWLER, 10, 80, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Leg-break specialist", 11, false, false, "Pakistan", "Larkana", false, 0.9, "eagles"),
-
-        // === HAWKS PLAYERS ===
-        Player("h1", "Josh Hazlewood", PlayerRole.BOWLER, 12, 90, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Metronomical accuracy", 11, false, false, "Australia", "Surrey", true, 4.2, "hawks"),
-        Player("h2", "Glenn Maxwell", PlayerRole.ALL_ROUNDER, 86, 78, PlayingStyle.AGGRESSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "The Big Show", 5, true, true, "Australia", "Yorkshire", true, 3.9, "hawks"),
-        Player("h3", "David Miller", PlayerRole.BATSMAN, 89, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Killer Miller", 6, true, true, "South Africa", "Surrey", true, 3.5, "hawks"),
-        Player("h4", "Shan Masood", PlayerRole.BATSMAN, 82, 5, PlayingStyle.DEFENSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Classy top order", 1, false, false, "Pakistan", "Multan", false, 2.1, "hawks"),
-        Player("h5", "Kamran Akmal Jr", PlayerRole.WICKET_KEEPER, 75, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "T20 specialist keeper", 2, false, true, "Pakistan", "Lahore", false, 1.0, "hawks"),
-        Player("h6", "Tayyab Tahir", PlayerRole.BATSMAN, 79, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Solid run accumulator", 3, false, false, "Pakistan", "Sialkot", false, 1.5, "hawks"),
-        Player("h7", "Shadab Khan", PlayerRole.ALL_ROUNDER, 80, 86, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Top grade leg-spinner", 7, false, false, "Pakistan", "Rawalpindi", false, 3.8, "hawks"),
-        Player("h8", "Ahsan Ali", PlayerRole.BATSMAN, 73, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Quick starter", 1, false, false, "Pakistan", "Karachi", false, 0.8, "hawks"),
-        Player("h9", "Usman Qadir", PlayerRole.BOWLER, 15, 80, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Legacy of spin", 10, false, false, "Pakistan", "Lahore", false, 1.2, "hawks"),
-        Player("h10", "Wahab Riaz Jr", PlayerRole.BOWLER, 18, 82, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.LEFT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Explosive pace and swing", 11, false, false, "Pakistan", "Lahore", false, 1.3, "hawks"),
-        Player("h11", "Imran Khan Sr", PlayerRole.BOWLER, 14, 81, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Swing specialist", 11, false, false, "Pakistan", "Peshawar", false, 0.9, "hawks"),
-        Player("h12", "Sohail Khan", PlayerRole.BOWLER, 16, 83, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "New ball threat", 10, false, false, "Pakistan", "Karachi", false, 1.1, "hawks"),
-        Player("h13", "Sahibzada Farhan", PlayerRole.BATSMAN, 80, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Talented top order", 2, false, false, "Pakistan", "Peshawar", false, 1.7, "hawks"),
-        Player("h14", "Hammad Azam", PlayerRole.ALL_ROUNDER, 74, 76, PlayingStyle.BALANCED, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Clutch all-rounder", 8, true, false, "Pakistan", "Rawalpindi", false, 1.2, "hawks"),
-        Player("h15", "Mohammad Irfan Jr", PlayerRole.BOWLER, 12, 80, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Tall pacer", 11, false, false, "Pakistan", "Faisalabad", false, 0.8, "hawks"),
-
-        // === FREE AGENTS / MARKET / AUCTION PLAYERS ===
-        Player("f1", "Kane Williamson", PlayerRole.BATSMAN, 91, 10, PlayingStyle.DEFENSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "World class anchor", 3, false, false, "New Zealand", "Yorkshire", true, 3.2, null),
-        Player("f2", "Nicholas Pooran", PlayerRole.WICKET_KEEPER, 89, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.LEFT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Fearless power hitter", 4, false, true, "West Indies", "Surrey", true, 4.0, null),
-        Player("f3", "Andre Russell", PlayerRole.ALL_ROUNDER, 84, 85, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Ultimate T20 weapon", 7, true, true, "West Indies", "Surrey", true, 4.2, null),
-        Player("f4", "Kagiso Rabada", PlayerRole.BOWLER, 18, 91, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "Proteas pace spearhead", 11, false, false, "South Africa", "Lancashire", true, 4.4, null),
-        Player("f5", "Rashid Khan Jr", PlayerRole.BOWLER, 22, 92, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.LEG_SPIN, null, "Young wrist spinner", 10, false, false, "Afghanistan", "Cardiff", true, 4.5, null),
-        Player("f6", "Rovman Powell", PlayerRole.BATSMAN, 83, 10, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Jamaican power", 5, false, true, "West Indies", "Surrey", true, 2.0, null),
-        Player("f7", "Haris Rauf", PlayerRole.BOWLER, 15, 88, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER_EXTRA_PACE, null, "150kph death bowler", 11, false, false, "Pakistan", "Rawalpindi", false, 3.5, null),
-        Player("f8", "Mohammad Ali", PlayerRole.BOWLER, 10, 83, PlayingStyle.DEFENSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Accurate fast-medium", 11, false, false, "Pakistan", "Sialkot", false, 1.4, null),
-        Player("f9", "Abbas Afridi", PlayerRole.BOWLER, 16, 82, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Slow ball specialist", 11, false, false, "Pakistan", "Peshawar", false, 1.3, null),
-        Player("f10", "Usman Khan", PlayerRole.BATSMAN, 82, 5, PlayingStyle.AGGRESSIVE, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Record breaking hitter", 1, false, true, "Pakistan", "Multan", false, 1.9, null),
-        Player("f11", "Irfan Khan", PlayerRole.ALL_ROUNDER, 74, 60, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "Reliable youngster", 6, false, false, "Pakistan", "Faisalabad", false, 1.2, null),
-        Player("f12", "Litton Das", PlayerRole.WICKET_KEEPER, 80, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Classy wicketkeeper-batter", 2, false, false, "Bangladesh", "Lancashire", true, 1.5, null),
-        Player("f13", "Sikandar Raza", PlayerRole.ALL_ROUNDER, 82, 83, PlayingStyle.BALANCED, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "Zimbabwean giant", 5, true, false, "Zimbabwe", "Surrey", true, 2.8, null),
-        Player("f14", "Pathum Nissanka", PlayerRole.BATSMAN, 84, 5, PlayingStyle.BALANCED, DeliveryStyle.MEDIUM, BattingHand.RIGHT_HAND, BowlingType.MEDIUM_VARIATIONS, null, "Solid top order technique", 1, false, false, "Sri Lanka", "Kent", true, 2.0, null),
-        Player("f15", "Hasan Ali", PlayerRole.BOWLER, 25, 84, PlayingStyle.AGGRESSIVE, DeliveryStyle.FAST, BattingHand.RIGHT_HAND, BowlingType.FAST_BOWLER, null, "Energy and swing", 9, false, false, "Pakistan", "Gujranwala", false, 2.5, null)
+        // === FREE AGENTS ===
+        Player("f1", "Kane Williamson", PlayerRole.BATSMAN, 91, 10, PlayingStyle.DEFENSIVE, DeliveryStyle.SPIN, BattingHand.RIGHT_HAND, BowlingType.OFF_SPIN, null, "World class anchor", 3, false, false, "New Zealand", "Yorkshire", true, 3.2, null, false, 0, 0, 0, 0, 0, 0, "Master tactician and top-tier technical batter for all conditions.", 33, 14)
     )
 
     // Setup active state list
@@ -191,12 +94,12 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
 
     // Franchise Teams list
     private val _teamsList = MutableStateFlow(listOf(
-        Team("kings", "Kings", "KNG", "👑", mutableListOf(), "#FBC02D", 50.0),
-        Team("stars", "Stars", "STR", "🌟", mutableListOf(), "#10B981", 50.0),
-        Team("sixers", "Sixers", "SXR", "💖", mutableListOf(), "#EC4899", 50.0),
-        Team("gladiators", "Gladiators", "GLD", "⚔️", mutableListOf(), "#8B5CF6", 50.0),
-        Team("eagles", "Eagles", "EGL", "🦅", mutableListOf(), "#3B82F6", 50.0),
-        Team("hawks", "Hawks", "HWK", "🔥", mutableListOf(), "#F97316", 50.0)
+        Team("kings", "Kings", "KNG", "👑", emptyList(), "#FBC02D", 50.0),
+        Team("stars", "Stars", "STR", "🌟", emptyList(), "#10B981", 50.0),
+        Team("sixers", "Sixers", "SXR", "💖", emptyList(), "#EC4899", 50.0),
+        Team("gladiators", "Gladiators", "GLD", "⚔️", emptyList(), "#8B5CF6", 50.0),
+        Team("eagles", "Eagles", "EGL", "🦅", emptyList(), "#3B82F6", 50.0),
+        Team("hawks", "Hawks", "HWK", "🔥", emptyList(), "#F97316", 50.0)
     ))
     val teamsList: StateFlow<List<Team>> = _teamsList.asStateFlow()
 
@@ -239,12 +142,17 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
         }
 
         // Distribute starting roster players to their specified teamIds
+        var currentTeams = _teamsList.value
         masterPlayersList.forEach { p ->
             if (p.teamId != null) {
-                val team = _teamsList.value.firstOrNull { t -> t.id == p.teamId }
-                team?.players?.add(p)
+                currentTeams = currentTeams.map { t ->
+                    if (t.id == p.teamId) {
+                        t.copy(players = t.players + p)
+                    } else t
+                }
             }
         }
+        _teamsList.value = currentTeams
         
         // Fix Lineups and Captains
         _teamsList.value.forEach { team ->
@@ -286,14 +194,18 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
             }
         }
 
-        // Auto Generate Playing XI if needed (The team.players list is the "Playing XI" in this app's current structural design)
-        if (team.players.size < 11 && squad.size >= 11) {
-            val autoXI = pickBalancedXI(squad)
-            team.players.clear()
-            team.players.addAll(autoXI)
-        } else if (team.players.isEmpty() && squad.size >= 11) {
-            val autoXI = pickBalancedXI(squad)
-            team.players.addAll(autoXI)
+        // Auto Generate Playing XI if needed
+        var newPlayers = team.players
+        if (newPlayers.size < 11 && squad.size >= 11) {
+            newPlayers = pickBalancedXI(squad)
+        } else if (newPlayers.isEmpty() && squad.size >= 11) {
+            newPlayers = pickBalancedXI(squad)
+        }
+        
+        if (newPlayers != team.players) {
+            _teamsList.value = _teamsList.value.map {
+                if (it.id == teamId) it.copy(players = newPlayers) else it
+            }
         }
     }
 
@@ -324,9 +236,9 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun recalculateBudgets() {
-        _teamsList.value.forEach { team ->
+        _teamsList.value = _teamsList.value.map { team ->
             val totalSpent = team.players.sumOf { it.marketPriceCr }
-            team.purseCr = (50.0 - totalSpent).coerceAtLeast(0.0)
+            team.copy(purseCr = (50.0 - totalSpent).coerceAtLeast(0.0))
         }
     }
 
@@ -580,7 +492,8 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun movePlayer(index: Int, direction: String) {
-        val list = userTeam.players
+        val currentTeam = userTeam
+        val list = currentTeam.players.toMutableList()
         if (direction == "up" && index > 0) {
             val temp = list[index]
             list[index] = list[index - 1]
@@ -590,17 +503,41 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
             list[index] = list[index + 1]
             list[index + 1] = temp
         }
-        _teamsList.value = ArrayList(_teamsList.value)
+        
+        _teamsList.value = _teamsList.value.map {
+            if (it.id == currentTeam.id) it.copy(players = list) else it
+        }
     }
 
     fun swapPlayers(index1: Int, index2: Int) {
-        val list = userTeam.players
+        val currentTeam = userTeam
+        val list = currentTeam.players.toMutableList()
         if (index1 in list.indices && index2 in list.indices) {
             val temp = list[index1]
             list[index1] = list[index2]
             list[index2] = temp
         }
-        _teamsList.value = ArrayList(_teamsList.value)
+        _teamsList.value = _teamsList.value.map {
+            if (it.id == currentTeam.id) it.copy(players = list) else it
+        }
+    }
+
+    fun removePlayerFromLineup(player: Player) {
+        val currentTeam = userTeam
+        val newList = currentTeam.players.filter { it.id != player.id }
+        _teamsList.value = _teamsList.value.map {
+            if (it.id == currentTeam.id) it.copy(players = newList) else it
+        }
+    }
+
+    fun addPlayerToLineup(player: Player) {
+        val currentTeam = userTeam
+        if (currentTeam.players.size < 21) {
+            val newList = (currentTeam.players + player).distinctBy { it.id }
+            _teamsList.value = _teamsList.value.map {
+                if (it.id == currentTeam.id) it.copy(players = newList) else it
+            }
+        }
     }
 
     fun setPlayerRole(player: Player, newRole: com.example.data.models.PlayerRole) {
@@ -619,25 +556,28 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
 
     // Roster actions: Buying or releasing players
     fun purchaseMarketPlayer(player: Player): Boolean {
-        val currentRoster = userTeam.players
+        val currentTeam = userTeam
+        val currentRoster = currentTeam.players
         val foreignCount = currentRoster.count { it.isForeign } + if (player.isForeign) 1 else 0
-        val localCount = currentRoster.count { !it.isForeign } + if (!player.isForeign) 1 else 0
 
         if (currentRoster.size >= 21) return false
-        if (userTeam.purseCr < player.marketPriceCr) return false
+        if (currentTeam.purseCr < player.marketPriceCr) return false
 
         // Check rules
         if (player.isForeign && foreignCount > 8) return false
-        if (!player.isForeign && localCount < 12 && currentRoster.size + 1 >= 21) {
-            // warning
+
+        // Update player master record
+        val pIdx = masterPlayersList.indexOfFirst { it.id == player.id }
+        if (pIdx != -1) {
+            masterPlayersList[pIdx] = masterPlayersList[pIdx].copy(teamId = currentTeam.id)
         }
 
-        // Deduct money and add to players list
-        userTeam.players.add(player)
-        player.teamId = userTeam.id
-        
-        // Remove from market pool/free agents
-        masterPlayersList.firstOrNull { it.id == player.id }?.teamId = userTeam.id
+        // Update teams list reactively
+        _teamsList.value = _teamsList.value.map {
+            if (it.id == currentTeam.id) {
+                it.copy(players = it.players + player)
+            } else it
+        }
 
         recalculateBudgets()
         _playersStateFlow.value = ArrayList(masterPlayersList)
@@ -645,17 +585,24 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun releaseSquadPlayer(player: Player): Boolean {
-        if (userTeam.players.size <= 16) return false // can't violate squad min size limit of 16 players
-
-        val isRemoved = userTeam.players.removeIf { it.id == player.id }
-        if (isRemoved) {
-            player.teamId = null
-            masterPlayersList.firstOrNull { it.id == player.id }?.teamId = null
-            recalculateBudgets()
-            _playersStateFlow.value = ArrayList(masterPlayersList)
-            return true
+        val currentTeam = userTeam
+        if (currentTeam.players.size <= 16) return false // can't violate squad min size limit of 16 players
+        
+        val pIdx = masterPlayersList.indexOfFirst { it.id == player.id }
+        if (pIdx != -1) {
+            masterPlayersList[pIdx] = masterPlayersList[pIdx].copy(teamId = null)
         }
-        return false
+
+        _teamsList.value = _teamsList.value.map {
+            if (it.id == currentTeam.id) {
+                val newList = it.players.filter { it.id != player.id }
+                it.copy(players = newList)
+            } else it
+        }
+
+        recalculateBudgets()
+        _playersStateFlow.value = ArrayList(masterPlayersList)
+        return true
     }
 
     // Player sorting, databases and search queries
@@ -929,11 +876,14 @@ class CricketViewModel(application: Application) : AndroidViewModel(application)
         }
 
         _recentBallLog.value = emptyList()
-        _matchStage.value = MatchStage.PLAYING
 
         addCommentary("INNINGS ${if (innings == 1) "1" else "2"}: ${_battingTeamNow.value.flagEmoji} ${_battingTeamNow.value.name} are coming in to bat! Primary Color accent overlay loaded.")
         addCommentary("Pitch conditions: ${_pitchType.value.displayName} - ${_pitchType.value.description}")
         addCommentary("Striker batsman: ${_strikerName.value}, Non-Striker: ${_nonStrikerName.value}. Bowler: ${_currentBowlerName.value} with the leather.")
+    }
+
+    fun startGameplay() {
+        _matchStage.value = MatchStage.PLAYING
     }
 
     private fun addCommentary(line: String) {

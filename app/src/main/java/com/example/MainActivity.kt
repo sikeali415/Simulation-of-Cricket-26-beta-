@@ -544,8 +544,13 @@ fun LeagueDashboardScreen(
 // -------------------------------------------------------------
 @Composable
 fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
-    val userTeam = viewModel.userTeam
-    var playingXIForeignCount = userTeam.players.take(11).count { it.isForeign }
+    val teams by viewModel.teamsList.collectAsState()
+    val userTeamId by viewModel.userTeamId.collectAsState()
+    val userTeam = teams.firstOrNull { it.id == userTeamId } ?: teams[0]
+    
+    val playingXIForeignCount = remember(userTeam.players) { 
+        userTeam.players.take(11).count { it.isForeign } 
+    }
     
     var selectedPlayerForProfile by remember { mutableStateOf<Player?>(null) }
     
@@ -732,7 +737,9 @@ fun LineupsScreen(viewModel: CricketViewModel, themeColor: Color) {
 @Composable
 fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
     val players by viewModel.playersStateFlow.collectAsState()
-    val userTeam = viewModel.userTeam
+    val teams by viewModel.teamsList.collectAsState()
+    val userTeamId by viewModel.userTeamId.collectAsState()
+    val userTeam = teams.firstOrNull { it.id == userTeamId } ?: teams[0]
 
     var selectedPlayerForProfile by remember { mutableStateOf<Player?>(null) }
     
@@ -994,7 +1001,9 @@ fun TransfersScreen(viewModel: CricketViewModel, themeColor: Color) {
 // -------------------------------------------------------------
 @Composable
 fun CustomizerScreen(viewModel: CricketViewModel, themeColor: Color) {
-    val userTeam = viewModel.userTeam
+    val teams by viewModel.teamsList.collectAsState()
+    val userTeamId by viewModel.userTeamId.collectAsState()
+    val userTeam = teams.firstOrNull { it.id == userTeamId } ?: teams[0]
 
     var teamName by remember { mutableStateOf(userTeam.name) }
     var abbreviation by remember { mutableStateOf(userTeam.abbreviation) }
@@ -1457,7 +1466,7 @@ fun PlayerProfileDialog(player: Player, onDismiss: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Market Valuation: PKR ${player.baseMarketValueCr} Cr",
+                    text = "Market Valuation: PKR ${player.marketPriceCr} Cr",
                     fontWeight = FontWeight.Black,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.primary,
@@ -1635,6 +1644,17 @@ fun TossPanelLayout(viewModel: CricketViewModel, themeColor: Color) {
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Button(
+                            onClick = { viewModel.startGameplay() },
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = themeColor)
+                        ) {
+                            Text("GO TO MATCH 🏏", fontWeight = FontWeight.Black)
+                        }
                     }
                 }
             }

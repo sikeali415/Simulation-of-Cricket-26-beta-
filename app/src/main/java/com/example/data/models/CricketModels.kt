@@ -86,7 +86,7 @@ data class Team(
     val name: String,
     val abbreviation: String,
     val flagEmoji: String,
-    val players: MutableList<Player> = mutableListOf(),
+    val players: List<Player> = emptyList(),
     var colorHex: String = "#3B82F6",
     var purseCr: Double = 50.0
 )
